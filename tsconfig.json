@@ -26,5 +26,5 @@
     // Folder for your code
     "include": [
         "./src/**/*"
-    ]
+, "src/Grey_ui.ts"    ]
 }

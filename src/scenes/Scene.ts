@@ -1,6 +1,6 @@
 import { Container, Sprite, Text } from "pixi.js";
-import { Gui_pause } from "./Gui_pause";
-import { Player } from "./Player";
+import { Gui_pause } from "../ui/Gui_pause";
+import { Player } from "../entities/Player";
 
 export class Scene extends Container{
     constructor(){
