@@ -48,7 +48,6 @@ export class Gui_pause extends Container{
         const title_pause: Text = new Text("Pause", {fontSize: 80,fill: "white", stroke: 0x000000, strokeThickness: 5});
         title_pause.position.set(160,100);
 
-        document.addEventListener("keydown", this.onKeyDown.bind(this));
         
 
         this.addChild(wood_ui);
@@ -61,8 +60,5 @@ export class Gui_pause extends Container{
     }
     private OnButtonClick() : void{
         console.log("new button clicked");
-    }
-    private onKeyDown(e: KeyboardEvent) : void{
-        console.log("key pressed",e);
     }
 }
