@@ -1,4 +1,3 @@
-import { EventEmitter } from "eventemitter3";
 import { utils } from "pixi.js";
 
 export class Keyboard{
