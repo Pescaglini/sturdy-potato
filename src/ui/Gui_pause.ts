@@ -79,6 +79,6 @@ export class Gui_pause extends Container{
         
     }
     private OnButtonClick() : void{
-        
+               
     }
 }

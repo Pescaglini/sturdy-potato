@@ -1,6 +1,6 @@
-import { Application, Loader } from 'pixi.js'
+import { Application, Loader, Ticker } from 'pixi.js'
 import { assets } from './assets';
-import { Scene } from './scenes/Scene';
+import { GameScene } from './scenes/GameScene';
 import { Keyboard } from './utils/Keyboard';
 
 const app = new Application({
@@ -39,8 +39,12 @@ window.dispatchEvent(new Event("resize"));
 Loader.shared.add(assets);
 
 Loader.shared.onComplete.add(()=>{
-	const myScene = new Scene();
+	const myScene = new GameScene();
 	app.stage.addChild(myScene);
+	Ticker.shared.add(function (deltaFrame){
+		myScene.update(Ticker.shared.deltaMS, deltaFrame);
+	})
+	
 });
 
 Loader.shared.load();
