@@ -42,6 +42,7 @@ Loader.shared.onComplete.add(()=>{
 	const myScene = new GameScene();
 	app.stage.addChild(myScene);
 	Ticker.shared.add(function (deltaFrame){
+		myScene.mousePosition(app.renderer.plugins.interaction.mouse.global);
 		myScene.update(Ticker.shared.deltaMS, deltaFrame);
 	})
 	

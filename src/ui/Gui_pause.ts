@@ -5,13 +5,16 @@ export class Gui_pause extends Container{
 
     private buttonResume : Button;
     private buttonOptions : Button;
+    private buttonMainMenu : Button;
 
     constructor(){
         super();
+
         const wood_ui = new NineSlicePlane(
             Texture.from("wood_gi"),
             35,35,35,35
         );
+        wood_ui.height += 40; 
         wood_ui.scale.set(1);
 
         const paper_ui = new NineSlicePlane(
@@ -19,6 +22,7 @@ export class Gui_pause extends Container{
             35,35,35,35
         );
         paper_ui.scale.set(1.1);
+        paper_ui.height += 40;
         paper_ui.position.set(50,60);
 
         
@@ -33,7 +37,7 @@ export class Gui_pause extends Container{
         const pauseScore_ui_container : Container = new Container();
         pauseScore_ui_container.addChild(gris_ui);
         pauseScore_ui_container.addChild(textScore);
-        pauseScore_ui_container.position.set(100,200);
+        pauseScore_ui_container.position.set(100,180);
 
 
         this.buttonResume = new Button(Texture.from("plank_ui"),
@@ -41,7 +45,7 @@ export class Gui_pause extends Container{
                                         Texture.from("plank_ui"), 
                                         this.OnButtonClick.bind(this));
         this.buttonResume.scale.set(0.5);
-        this.buttonResume.position.set(275,640);
+        this.buttonResume.position.set(275,680);
         const textResume: Text = new Text("Resume", {fontSize: 100,fill: "white", stroke: 0x000000, strokeThickness: 5});
         textResume.anchor.set(1);
         textResume.position.set(this.buttonResume.width/2,this.buttonResume.height/2);
@@ -53,11 +57,23 @@ export class Gui_pause extends Container{
                                         Texture.from("plank_ui"), 
                                         this.OnButtonClick.bind(this));
         this.buttonOptions.scale.set(0.5);
-        this.buttonOptions.position.set(275,490);
+        this.buttonOptions.position.set(275,530);
         const textOptions: Text = new Text("Options", {fontSize: 100,fill: "white", stroke: 0x000000, strokeThickness: 5});
         textOptions.anchor.set(1);
         textOptions.position.set(this.buttonOptions.width/2,this.buttonOptions.height/2);
         this.buttonOptions.addChild(textOptions);
+
+
+        this.buttonMainMenu = new Button(Texture.from("plank_ui"),
+                                        Texture.from("plank_ui"),
+                                        Texture.from("plank_ui"), 
+                                        this.OnButtonClick.bind(this));
+        this.buttonMainMenu.scale.set(0.5);
+        this.buttonMainMenu.position.set(275,380);
+        const textMainMenu: Text = new Text("Main Menu", {fontSize: 100,fill: "white", stroke: 0x000000, strokeThickness: 5});
+        textMainMenu.anchor.set(1);
+        textMainMenu.position.set(this.buttonMainMenu.width/2 + 80,this.buttonMainMenu.height/2);
+        this.buttonMainMenu.addChild(textMainMenu);
 
         
         const torch_ui: Sprite = Sprite.from("torch_ui");
@@ -66,7 +82,7 @@ export class Gui_pause extends Container{
 
 
         const title_pause: Text = new Text("Pause", {fontSize: 80,fill: "white", stroke: 0x000000, strokeThickness: 5});
-        title_pause.position.set(160,100);
+        title_pause.position.set(160,80);
 
         
         this.addChild(wood_ui);
@@ -76,6 +92,7 @@ export class Gui_pause extends Container{
         this.addChild(title_pause);
         this.addChild(this.buttonResume);
         this.addChild(this.buttonOptions);
+        this.addChild(this.buttonMainMenu);
         
     }
     private OnButtonClick() : void{
