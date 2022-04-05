@@ -51,22 +51,27 @@ export class GameScene extends Container implements IUpdateable{
     public update(_deltaTime: number, _deltaFrame: number): void {
         //Todo esto creo que no tiene porque ser responsabilidad de la escena pero desp se cambia.
 
-        this.player.rotateTowardMouse(this.mousePos);
-
         if(this.pauseState){
+            this.player.isRunning = false;
             if(Keyboard.state.get("KeyA")){
-                this.player.position.x -= 4; 
+                this.player.position.x -= 4;
+                this.player.isRunning = true;
             }
             if(Keyboard.state.get("KeyD")){
-                this.player.position.x += 4; 
+                this.player.position.x += 4;
+                this.player.isRunning = true;
             }
             if(Keyboard.state.get("KeyW")){
-                this.player.position.y -= 4; 
+                this.player.position.y -= 4;
+                this.player.isRunning = true;
             }
             if(Keyboard.state.get("KeyS")){
-                this.player.position.y += 4; 
+                this.player.position.y += 4;
+                this.player.isRunning = true;
             }
         }
+        this.player.changeRunningAnimation();
+        this.player.rotateTowardMouse(this.mousePos);
     }
     
     private pauseGame() : void{

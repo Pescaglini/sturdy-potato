@@ -1,7 +1,14 @@
 
 export const assets = [
     {url: "./character/character.png", name: "myCharacter"},
+    {url: "./character/archer_running_1.png", name: "archer_running_1"},
+    {url: "./character/archer_running_2.png", name: "archer_running_2"},
+    {url: "./character/archer_running_3.png", name: "archer_running_3"},
+    {url: "./character/archer_running_4.png", name: "archer_running_4"},
+    {url: "./character/archer_stand.png", name: "archer_stand"},
+
     {url: "./decoration/background_1.png", name: "myBackground_1"},
+
 
     {url: "./ui/ui_elements/brick_ui.jpg", name: "brick_ui"},
     {url: "./ui/ui_elements/paper_ui.png", name: "paper_ui"},
