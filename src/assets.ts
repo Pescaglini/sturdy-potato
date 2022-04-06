@@ -18,6 +18,7 @@ export const assets = [
     {url: "./ui/ui_elements/pause_ui.png", name: "pause_ui"},
     {url: "./ui/ui_elements/plank_ui.png", name: "plank_ui"},
     {url: "./ui/ui_elements/configuration_ui.png", name: "configuration_ui"},
-    {url: "./ui/ui_elements/exit_ui.png", name: "exit_ui"}
+    {url: "./ui/ui_elements/exit_ui.png", name: "exit_ui"},
+    {url: "./ui/ui_elements/torch_animated.json", name: "torch_animated_js"}
     
 ];

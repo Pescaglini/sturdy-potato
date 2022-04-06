@@ -1,4 +1,4 @@
-import { Container, NineSlicePlane, Sprite, Texture, Text } from "pixi.js";
+import { Container, NineSlicePlane, Texture, Text, AnimatedSprite } from "pixi.js";
 import { Button } from "./Button";
 
 export class Gui_pause extends Container{
@@ -76,9 +76,21 @@ export class Gui_pause extends Container{
         this.buttonMainMenu.addChild(textMainMenu);
 
         
-        const torch_ui: Sprite = Sprite.from("torch_ui");
-        torch_ui.scale.set(0.5);
-        torch_ui.position.set(450,0);
+        const torch_ui : AnimatedSprite = new AnimatedSprite([
+            Texture.from("Torch_v101.png"),
+            Texture.from("Torch_v102.png"),
+            Texture.from("Torch_v103.png"),
+            Texture.from("Torch_v104.png"),
+            Texture.from("Torch_v105.png"),
+            Texture.from("Torch_v106.png"),
+            Texture.from("Torch_v107.png"),
+            Texture.from("Torch_v108.png")
+        ], true
+        );
+        torch_ui.play();
+        torch_ui.animationSpeed = 0.25;
+        torch_ui.scale.set(5);
+        torch_ui.position.set(425,-50);
 
 
         const title_pause: Text = new Text("Pause", {fontSize: 80,fill: "white", stroke: 0x000000, strokeThickness: 5});
