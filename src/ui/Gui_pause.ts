@@ -6,6 +6,7 @@ export class Gui_pause extends Container{
     private buttonResume : Button;
     private buttonOptions : Button;
     private buttonMainMenu : Button;
+    public static readonly CLOSE_EVENT = "closeMe"; 
 
     constructor(){
         super();
@@ -14,8 +15,8 @@ export class Gui_pause extends Container{
             Texture.from("wood_gi"),
             35,35,35,35
         );
-        wood_ui.height += 40; 
-        wood_ui.scale.set(1);
+        //wood_ui.height += 40; 
+        wood_ui.scale.set(0.9);
 
         const paper_ui = new NineSlicePlane(
             Texture.from("paper_ui"),
@@ -43,7 +44,7 @@ export class Gui_pause extends Container{
         this.buttonResume = new Button(Texture.from("plank_ui"),
                                         Texture.from("plank_ui"),
                                         Texture.from("plank_ui"), 
-                                        this.OnButtonClick.bind(this));
+                                        this.closePauseGui.bind(this));
         this.buttonResume.scale.set(0.5);
         this.buttonResume.position.set(275,680);
         const textResume: Text = new Text("Resume", {fontSize: 100,fill: "white", stroke: 0x000000, strokeThickness: 5});
@@ -108,6 +109,9 @@ export class Gui_pause extends Container{
         
     }
     private OnButtonClick() : void{
-               
+        
+    }
+    private closePauseGui(){
+       this.emit(Gui_pause.CLOSE_EVENT);
     }
 }

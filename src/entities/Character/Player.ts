@@ -1,9 +1,12 @@
 import { AnimatedSprite, Container, Sprite, Texture } from "pixi.js";
+import { Keyboard } from "../../utils/Keyboard";
 
 export class Player extends Container {
+    
+    
     private character : Sprite;
     private character_running : AnimatedSprite;
-    public isRunning : boolean;
+    private isRunning : boolean;
 
     constructor(){
         super();
@@ -25,6 +28,25 @@ export class Player extends Container {
         this.isRunning = false;
         
     }
+
+    public update(_deltaFrame: number, mousePos : any) {
+        this.isRunning = false;
+        if(Keyboard.state.get("KeyA")){
+            this.isRunning = true;
+        }
+        if(Keyboard.state.get("KeyD")){
+            this.isRunning = true;
+        }
+        if(Keyboard.state.get("KeyW")){
+            this.isRunning = true;
+        }
+        if(Keyboard.state.get("KeyS")){
+            this.isRunning = true;
+        }
+        this.changeRunningAnimation();
+        this.rotateTowardMouse(mousePos);
+    }
+
     public rotateTowardMouse(mouse : any) : void {
         const globalCharacterPos = this.toGlobal(this.character.position)
         const dx = mouse.x - globalCharacterPos.x;

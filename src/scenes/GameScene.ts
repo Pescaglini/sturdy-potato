@@ -1,9 +1,9 @@
 import { Container, Sprite, Text, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
-import { Player } from "../entities/Player";
+import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
-import { Keyboard } from "../utils/Keyboard";
 import { Button } from "../ui/Button";
+import { PhysicsContainer } from "../utils/PhysicsContainer";
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -13,6 +13,8 @@ export class GameScene extends Container implements IUpdateable{
     private pauseState : boolean;
     private gui_pause : Gui_pause;
     private mousePos : any;
+    
+    private physicsCharacter: PhysicsContainer;
 
     constructor(){
         super();
@@ -21,12 +23,12 @@ export class GameScene extends Container implements IUpdateable{
         this.player.scale.set(1);
         this.player.position.set(300,300);
 
-        this.pauseState = true;
+        this.pauseState = false;
         
         this.pauseButton = new Button(Texture.from("configuration_ui"),
                                         Texture.from("configuration_ui"),
                                         Texture.from("configuration_ui"), 
-                                        this.pauseGame.bind(this));
+                                        this.openPauseMenu.bind(this));
         this.pauseButton.position.set(1870,50);
         this.pauseButton.scale.set(0.3);
         
@@ -34,53 +36,41 @@ export class GameScene extends Container implements IUpdateable{
         const title: Text = new Text("Inserte texto aqui",{fontSize: 20, stroke: 0xFCFF00});
         
         this.gui_pause = new Gui_pause();
-        this.gui_pause.position.set(600,150)
+        this.gui_pause.position.set(600,150);
+        this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
 
 
         background.scale.set(1.8);
 
-        title.text = "Top Down Survival por Oleadas Generico de Fantasia";
-        title.position.set(0,0)
+        title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse";
+        title.position.set(0,0);
+
+        this.physicsCharacter = new PhysicsContainer(); 
+        this.physicsCharacter.addChild(this.player);
+        this.physicsCharacter.activatePlayerControl(true);
         
         this.addChild(background);
-        this.addChild(this.player);
+        
+        this.addChild(this.physicsCharacter);
+
         this.addChild(title);
         this.addChild(this.pauseButton);
     }
     
-    public update(_deltaTime: number, _deltaFrame: number): void {
+    public update(deltaTime: number, deltaFrame: number): void {
         //Todo esto creo que no tiene porque ser responsabilidad de la escena pero desp se cambia.
-
         if(this.pauseState){
-            this.player.isRunning = false;
-            if(Keyboard.state.get("KeyA")){
-                this.player.position.x -= 4;
-                this.player.isRunning = true;
-            }
-            if(Keyboard.state.get("KeyD")){
-                this.player.position.x += 4;
-                this.player.isRunning = true;
-            }
-            if(Keyboard.state.get("KeyW")){
-                this.player.position.y -= 4;
-                this.player.isRunning = true;
-            }
-            if(Keyboard.state.get("KeyS")){
-                this.player.position.y += 4;
-                this.player.isRunning = true;
-            }
+            return;
         }
-        this.player.changeRunningAnimation();
-        this.player.rotateTowardMouse(this.mousePos);
+        this.player.update(deltaFrame, this.mousePos);
+        const dt = deltaTime / 1000;
+        this.physicsCharacter.update(dt);
+        
+    
     }
     
-    private pauseGame() : void{
-        if(this.pauseState){
-            this.addChild(this.gui_pause);
-        }else{
-            this.removeChild(this.gui_pause);
-        }
-        this.pauseState = !this.pauseState;
+    public openPauseMenu() : void{
+        this.addChild(this.gui_pause);
     }
 
     public mousePosition(global: any) {
