@@ -4,6 +4,7 @@ import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
 import { Button } from "../ui/Button";
 import { PhysicsContainer } from "../utils/PhysicsContainer";
+import { Enemy } from "../entities/Enemys/Enemy";
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -15,13 +16,13 @@ export class GameScene extends Container implements IUpdateable{
     private mousePos : any;
     
     private physicsCharacter: PhysicsContainer;
+    private goblin : Enemy;
 
     constructor(){
         super();
 
         this.player = new Player(); 
         this.player.scale.set(1);
-        this.player.position.set(300,300);
 
         this.pauseState = false;
         
@@ -49,12 +50,20 @@ export class GameScene extends Container implements IUpdateable{
         this.physicsCharacter.addChild(this.player);
         this.physicsCharacter.activatePlayerControl(true);
         
+
+        this.goblin = new Enemy(Texture.from("goblin"),200);
+        this.goblin.position.set(800,800);
+        this.goblin.scale.set(2);
+       //this.goblin.createPatrolRoute(this.goblin.position,100);
+
         this.addChild(background);
-        
+    
         this.addChild(this.physicsCharacter);
 
         this.addChild(title);
         this.addChild(this.pauseButton);
+
+        this.addChild(this.goblin);
     }
     
     public update(deltaTime: number, deltaFrame: number): void {
@@ -65,6 +74,8 @@ export class GameScene extends Container implements IUpdateable{
         this.player.update(deltaFrame, this.mousePos);
         const dt = deltaTime / 1000;
         this.physicsCharacter.update(dt);
+        
+        this.goblin.update(dt, deltaFrame, this.physicsCharacter.position);
         
     
     }
