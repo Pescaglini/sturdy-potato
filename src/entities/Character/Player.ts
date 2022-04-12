@@ -48,7 +48,7 @@ export class Player extends Container {
     }
 
     public rotateTowardMouse(mouse : any) : void {
-        const globalCharacterPos = this.toGlobal(this.character.position)
+        const globalCharacterPos = this.toGlobal(this.character.position);
         const dx = mouse.x - globalCharacterPos.x;
         const dy = mouse.y - globalCharacterPos.y;
         const rot = (Math.atan2(dy, dx)) + 3.14/2;

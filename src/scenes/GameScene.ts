@@ -54,7 +54,7 @@ export class GameScene extends Container implements IUpdateable{
         this.goblin = new Enemy(Texture.from("goblin"),200);
         this.goblin.position.set(800,800);
         this.goblin.scale.set(2);
-       //this.goblin.createPatrolRoute(this.goblin.position,100);
+        this.goblin.createPatrolRoute(this.goblin.position,100);
 
         this.addChild(background);
     
@@ -74,7 +74,7 @@ export class GameScene extends Container implements IUpdateable{
         this.player.update(deltaFrame, this.mousePos);
         const dt = deltaTime / 1000;
         this.physicsCharacter.update(dt);
-        
+
         this.goblin.update(dt, deltaFrame, this.physicsCharacter.position);
         
     
