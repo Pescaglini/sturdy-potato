@@ -46,7 +46,8 @@ export class Enemy extends Container {
     }
 
     public createPatrolRoute(center : Point, radius : number, _extra = 0) : void{
-        radius = radius;
+        this.onPatrol = true;
+        
         const p1 = new Point(center.x - (radius),center.y + (radius));
         const p2 = new Point(center.x - (radius),center.y - (radius));
         const p3 = new Point(center.x + (radius),center.y - (radius));
@@ -55,9 +56,19 @@ export class Enemy extends Container {
         this.patrol_points.push(p2);
         this.patrol_points.push(p3);
         this.patrol_points.push(p4);
-        this.assingNextPatrolPoint();
-        this.onPatrol = true;
 
+        const point_global_DL : Point = this.patrol_points[1];
+        const point_global_UR : Point = this.patrol_points[3];
+        for (let index = 0; index < _extra; index++) {
+            const x = Math.floor(Math.random() * (point_global_DL.x - point_global_UR.x + 1) + point_global_UR.x);
+            const y = Math.floor(Math.random() * (point_global_UR.y - point_global_DL.y + 1) + point_global_DL.y);
+            const randomPoint = new Point(x,y);
+            this.patrol_points.push(randomPoint);
+        }
+
+        this.shufflePatrolRoute();
+        this.assingNextPatrolPoint();
+        
         if(this.debuggin){
             this.patrolRouteDebug.lineStyle(5,0xFF0000);
             this.patrolRouteDebug.moveTo(-radius,radius);
@@ -65,11 +76,17 @@ export class Enemy extends Container {
             this.patrolRouteDebug.lineTo(radius,-radius);
             this.patrolRouteDebug.lineTo(radius,radius);
             this.patrolRouteDebug.lineTo(-radius,radius);
+            for (let index = 0; index < this.patrol_points.length; index++) {
+                this.patrolRouteDebug.beginFill(0x00FFFF,1);
+                const point_global : Point = this.toLocal(this.patrol_points[index]);
+                this.patrolRouteDebug.drawCircle(point_global.x,point_global.y,5);
+                this.patrolRouteDebug.endFill();
+            }
             this.addChild(this.patrolRouteDebug);
         }
     }
 
-    public shufflePatrolRoute(){
+    private shufflePatrolRoute(){
         let currentIndex = this.patrol_points.length,  randomIndex;
         while (currentIndex != 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);

@@ -53,12 +53,12 @@ export class GameScene extends Container implements IUpdateable{
         this.physicsCharacter = new PhysicsContainer(); 
         this.physicsCharacter.addChild(this.player);
         this.physicsCharacter.activatePlayerControl(true);
+        this.physicsCharacter.position.set(50,50);
         
         this.createEnemy("GOBLIN");
         this.goblin = new Enemy(Texture.from("goblin"),200, new Point(800,800));
         this.goblin.position.set(800,800);
-        this.goblin.createPatrolRoute(this.goblin.position,100);
-        this.goblin.shufflePatrolRoute();
+        this.goblin.createPatrolRoute(this.goblin.position,100,2);
 
         this.addChild(background);
     
@@ -87,6 +87,7 @@ export class GameScene extends Container implements IUpdateable{
     
     public openPauseMenu() : void{
         this.addChild(this.gui_pause);
+        this.addChild(this.mousePointer);
     }
 
     public mousePosition(global: any) : void {
