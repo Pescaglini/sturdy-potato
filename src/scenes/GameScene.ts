@@ -1,4 +1,4 @@
-import { Container, Sprite, Text, Texture } from "pixi.js";
+import { Container, Point, Sprite, Text, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
@@ -13,6 +13,7 @@ export class GameScene extends Container implements IUpdateable{
     private pauseButton : Button;
     private pauseState : boolean;
     private gui_pause : Gui_pause;
+    private mousePointer : Sprite;
     private mousePos : any;
     
     private physicsCharacter: PhysicsContainer;
@@ -20,6 +21,8 @@ export class GameScene extends Container implements IUpdateable{
 
     constructor(){
         super();
+
+        this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
         this.player = new Player(); 
         this.player.scale.set(1);
@@ -34,6 +37,8 @@ export class GameScene extends Container implements IUpdateable{
         this.pauseButton.scale.set(0.3);
         
         const background: Sprite = Sprite.from("myBackground_1");
+        background.scale.set(1.8);
+
         const title: Text = new Text("Inserte texto aqui",{fontSize: 20, stroke: 0xFCFF00});
         
         this.gui_pause = new Gui_pause();
@@ -41,8 +46,7 @@ export class GameScene extends Container implements IUpdateable{
         this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
 
 
-        background.scale.set(1.8);
-
+        
         title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse";
         title.position.set(0,0);
 
@@ -50,20 +54,21 @@ export class GameScene extends Container implements IUpdateable{
         this.physicsCharacter.addChild(this.player);
         this.physicsCharacter.activatePlayerControl(true);
         
-
-        this.goblin = new Enemy(Texture.from("goblin"),200);
+        this.createEnemy("GOBLIN");
+        this.goblin = new Enemy(Texture.from("goblin"),200, new Point(800,800));
         this.goblin.position.set(800,800);
-        this.goblin.scale.set(2);
         this.goblin.createPatrolRoute(this.goblin.position,100);
+        this.goblin.shufflePatrolRoute();
 
         this.addChild(background);
     
         this.addChild(this.physicsCharacter);
+        this.addChild(this.goblin);
 
         this.addChild(title);
         this.addChild(this.pauseButton);
 
-        this.addChild(this.goblin);
+        this.addChild(this.mousePointer)
     }
     
     public update(deltaTime: number, deltaFrame: number): void {
@@ -77,15 +82,26 @@ export class GameScene extends Container implements IUpdateable{
 
         this.goblin.update(dt, deltaFrame, this.physicsCharacter.position);
         
-    
+        this.mouseSpritePosition();
     }
     
     public openPauseMenu() : void{
         this.addChild(this.gui_pause);
     }
 
-    public mousePosition(global: any) {
+    public mousePosition(global: any) : void {
 		this.mousePos = global;
 	}
+
+    private mouseSpritePosition() : void{
+        this.mousePointer.position.x = this.mousePos.x - (this.mousePointer.width/2);
+        this.mousePointer.position.y = this.mousePos.y - (this.mousePointer.height/2);
+    }
+
+    private createEnemy(enemy_name : String) : void{
+        if(enemy_name == "GOBLIN"){
+            
+        }
+    }
    
 }

@@ -12,7 +12,9 @@ export class Enemy extends Container {
     private detectionRadius : number;
     private debuggin : Boolean;
 
-    constructor(texture_name : Texture, detectionRadius : number){
+    private patrolRouteDebug : Graphics;
+
+    constructor(texture_name : Texture, detectionRadius : number, startPosition : Point){
         super();
         this.onPatrol = false;
         this.debuggin = true;
@@ -20,12 +22,14 @@ export class Enemy extends Container {
         this.detectionRadius = detectionRadius;
         this.enemy_sprite = Sprite.from(texture_name);
         this.enemy_sprite.anchor.set(0.5);
-        this.speed = 100;
+        this.enemy_sprite.scale.set(2);
+        this.speed = 150;
         this.patrol_points = new Array<Point>();
         this.currentPatrolIndex = -1;
-        this.currentPatrolPoint = new Point(-1,-1);
+        this.currentPatrolPoint = startPosition;
         this.addChild(this.enemy_sprite);
 
+        this.patrolRouteDebug = new Graphics();
         if(this.debuggin){
             const detectionCircle = new Graphics();
             detectionCircle.beginFill(0x000000,0.1);
@@ -42,6 +46,7 @@ export class Enemy extends Container {
     }
 
     public createPatrolRoute(center : Point, radius : number, _extra = 0) : void{
+        radius = radius;
         const p1 = new Point(center.x - (radius),center.y + (radius));
         const p2 = new Point(center.x - (radius),center.y - (radius));
         const p3 = new Point(center.x + (radius),center.y - (radius));
@@ -52,6 +57,26 @@ export class Enemy extends Container {
         this.patrol_points.push(p4);
         this.assingNextPatrolPoint();
         this.onPatrol = true;
+
+        if(this.debuggin){
+            this.patrolRouteDebug.lineStyle(5,0xFF0000);
+            this.patrolRouteDebug.moveTo(-radius,radius);
+            this.patrolRouteDebug.lineTo(-radius,-radius);
+            this.patrolRouteDebug.lineTo(radius,-radius);
+            this.patrolRouteDebug.lineTo(radius,radius);
+            this.patrolRouteDebug.lineTo(-radius,radius);
+            this.addChild(this.patrolRouteDebug);
+        }
+    }
+
+    public shufflePatrolRoute(){
+        let currentIndex = this.patrol_points.length,  randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [this.patrol_points[currentIndex], this.patrol_points[randomIndex]] = [
+            this.patrol_points[randomIndex], this.patrol_points[currentIndex]];
+        }
     }
     
     private detections(playerPos : Point){
@@ -59,13 +84,13 @@ export class Enemy extends Container {
         if(distanceToPlayer <= this.detectionRadius){
             this.isPlayerDetected = true;
         }
-        if(distanceToPlayer > (this.detectionRadius + 100)){
+        if(distanceToPlayer > (this.detectionRadius)){
             this.isPlayerDetected = false;
             this.onPatrol = true;
         }
         if(this.onPatrol){
             const disntanceToPatrolPoint = this.distanceTo(this.currentPatrolPoint);
-            if(disntanceToPatrolPoint < 5){
+            if(disntanceToPatrolPoint < 1){
                 this.assingNextPatrolPoint();
             }
         }
@@ -90,10 +115,10 @@ export class Enemy extends Container {
         this.currentPatrolPoint = this.patrol_points[this.currentPatrolIndex];
     }
 
-    private moveTowards(objectPoint: Point, _deltaTime : number) : void {
+    private moveTowards(objectPoint: Point, deltaTime : number) : void {
         const rot = this.calculateRotationTo(objectPoint);
-        this.enemy_sprite.x = this.enemy_sprite.x + this.speed  * Math.cos(rot - 3.14/2) * _deltaTime;
-	    this.enemy_sprite.y = this.enemy_sprite.y + this.speed  * Math.sin(rot - 3.14/2) * _deltaTime;    
+        this.enemy_sprite.x = this.enemy_sprite.x + this.speed  * Math.cos(rot - 3.14/2) * deltaTime;
+	    this.enemy_sprite.y = this.enemy_sprite.y + this.speed  * Math.sin(rot - 3.14/2) * deltaTime;    
     }
 
     private rotateTowards(objectPoint: Point) : void {

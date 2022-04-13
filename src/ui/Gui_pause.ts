@@ -6,7 +6,8 @@ export class Gui_pause extends Container{
     private buttonResume : Button;
     private buttonOptions : Button;
     private buttonMainMenu : Button;
-    public static readonly CLOSE_EVENT = "closeMe"; 
+    public static readonly CLOSE_EVENT = "closeMe";
+    public static readonly OPTIONS_EVENT = "openOptionsWindow";
 
     constructor(){
         super();
@@ -56,7 +57,7 @@ export class Gui_pause extends Container{
         this.buttonOptions = new Button(Texture.from("plank_ui"),
                                         Texture.from("plank_ui"),
                                         Texture.from("plank_ui"), 
-                                        this.OnButtonClick.bind(this));
+                                        this.openOptionsGui.bind(this));
         this.buttonOptions.scale.set(0.5);
         this.buttonOptions.position.set(275,530);
         const textOptions: Text = new Text("Options", {fontSize: 100,fill: "white", stroke: 0x000000, strokeThickness: 5});
@@ -113,5 +114,8 @@ export class Gui_pause extends Container{
     }
     private closePauseGui(){
        this.emit(Gui_pause.CLOSE_EVENT);
+    }
+    private openOptionsGui() : void{
+        this.emit(Gui_pause.OPTIONS_EVENT);
     }
 }
