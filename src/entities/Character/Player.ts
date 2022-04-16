@@ -1,5 +1,6 @@
 import { AnimatedSprite, Container, Sprite, Texture } from "pixi.js";
 import { Keyboard } from "../../utils/Keyboard";
+import { Weapon } from "../Weapons/Weapon";
 
 export class Player extends Container {
     
@@ -7,6 +8,7 @@ export class Player extends Container {
     private character : Sprite;
     private character_running : AnimatedSprite;
     private isRunning : boolean;
+    private activeWeapon : Weapon;
 
     constructor(){
         super();
@@ -24,6 +26,8 @@ export class Player extends Container {
         this.character_running.scale.set(1.5);
         this.character_running.play();
         this.character_running.animationSpeed = 0.2;
+
+        this.activeWeapon = new Weapon(Texture.from("arrow_1"), 30);
 
         this.isRunning = false;
         
@@ -47,7 +51,15 @@ export class Player extends Container {
         this.rotateTowardMouse(mousePos);
     }
 
-    public rotateTowardMouse(mouse : any) : void {
+    public hasAmmo() : Boolean{
+        return this.activeWeapon.hasAmmo();
+    }
+
+    public getAmmoTexture() : Texture{
+        return this.activeWeapon.getAmmoTexture();
+    }
+
+    private rotateTowardMouse(mouse : any) : void {
         const globalCharacterPos = this.toGlobal(this.character.position);
         const dx = mouse.x - globalCharacterPos.x;
         const dy = mouse.y - globalCharacterPos.y;
@@ -55,7 +67,7 @@ export class Player extends Container {
         this.character.rotation = rot;
         this.character_running.rotation = rot;
     }
-    public changeRunningAnimation(){
+    private changeRunningAnimation(){
         if(!this.isRunning){
             this.addChild(this.character);
             this.removeChild(this.character_running)

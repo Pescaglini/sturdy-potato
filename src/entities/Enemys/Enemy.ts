@@ -11,6 +11,8 @@ export class Enemy extends Container {
     private speed : number;
     private detectionRadius : number;
     private debuggin : Boolean;
+    private patrol_timer : number;
+    private isWaiting : Boolean;
 
     private patrolRouteDebug : Graphics;
 
@@ -19,7 +21,9 @@ export class Enemy extends Container {
         this.onPatrol = false;
         this.debuggin = true;
         this.isPlayerDetected = false;
+        this.isWaiting = false;
         this.detectionRadius = detectionRadius;
+        this.patrol_timer = 0;
         this.enemy_sprite = Sprite.from(texture_name);
         this.enemy_sprite.anchor.set(0.5);
         this.enemy_sprite.scale.set(2);
@@ -40,9 +44,10 @@ export class Enemy extends Container {
         }
     }
 
-    public update(_deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
+    public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
+        this.timeControl(deltaSeconds);
         this.detections(playerPos);
-        this.movimiento(playerPos, _deltaSeconds);
+        this.movimiento(playerPos, deltaSeconds);
     }
 
     public createPatrolRoute(center : Point, radius : number, _extra = 0) : void{
@@ -96,6 +101,15 @@ export class Enemy extends Container {
         }
     }
     
+    private timeControl(deltaSeconds : number){
+        this.patrol_timer += deltaSeconds;
+        if(this.patrol_timer < 2){
+            this.isWaiting = true;
+        }else{
+            this.isWaiting = false;
+        }
+    }
+
     private detections(playerPos : Point){
         const distanceToPlayer = this.distanceTo(playerPos);
         if(distanceToPlayer <= this.detectionRadius){
@@ -105,9 +119,11 @@ export class Enemy extends Container {
             this.isPlayerDetected = false;
             this.onPatrol = true;
         }
-        if(this.onPatrol){
+        if(this.onPatrol && !this.isWaiting){
             const disntanceToPatrolPoint = this.distanceTo(this.currentPatrolPoint);
             if(disntanceToPatrolPoint < 1){
+                this.isWaiting = true;
+                this.patrol_timer = 0;
                 this.assingNextPatrolPoint();
             }
         }
@@ -118,7 +134,7 @@ export class Enemy extends Container {
         if(this.isPlayerDetected){
             this.rotateTowards(playerPos);
             this.moveTowards(playerPos, deltaTime);
-        }else if(this.onPatrol){
+        }else if(this.onPatrol && this.patrol_timer > 2){
             this.rotateTowards(this.currentPatrolPoint);
             this.moveTowards(this.currentPatrolPoint, deltaTime);
         }

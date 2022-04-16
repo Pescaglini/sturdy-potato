@@ -8,6 +8,9 @@ export const assets = [
     {url: "./character/archer_running_4.png", name: "archer_running_4"},
     {url: "./character/archer_stand.png", name: "archer_stand"},
 
+    //Weapons
+    {url: "./character/arrow_1.png", name: "arrow_1"},
+
     //Escenario
     {url: "./decoration/background_1.png", name: "myBackground_1"},
     //{url: "./decoration/tree_1.png", name: "tree_1"},
@@ -16,6 +19,8 @@ export const assets = [
     {url: "./enemys/goblin.png", name: "goblin"},
     {url: "./enemys/gordoTutuca.png", name: "gordoTutuca"},
     
+    //Utils
+    {url: "./utils/transparent_background.png", name: "interactive_background"},
 
     //UI
     {url: "./ui/ui_elements/brick_ui.jpg", name: "brick_ui"},

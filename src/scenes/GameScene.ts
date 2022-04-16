@@ -5,6 +5,8 @@ import { IUpdateable } from "../utils/IUpdateable";
 import { Button } from "../ui/Button";
 import { PhysicsContainer } from "../utils/PhysicsContainer";
 import { Enemy } from "../entities/Enemys/Enemy";
+import { Projectile } from "../entities/Weapons/Projectile";
+import { InteractiveSpace } from "../utils/InteractiveSpace";
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -15,6 +17,9 @@ export class GameScene extends Container implements IUpdateable{
     private gui_pause : Gui_pause;
     private mousePointer : Sprite;
     private mousePos : any;
+
+    private interactive_background : InteractiveSpace;
+    private character_projectiles :  Array<Projectile>;
     
     private physicsCharacter: PhysicsContainer;
     private goblin : Enemy;
@@ -26,6 +31,10 @@ export class GameScene extends Container implements IUpdateable{
 
         this.player = new Player(); 
         this.player.scale.set(1);
+
+        this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
+
+        this.character_projectiles = new Array<Projectile>();
 
         this.pauseState = false;
         
@@ -46,8 +55,7 @@ export class GameScene extends Container implements IUpdateable{
         this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
 
 
-        
-        title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse";
+        title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse\nDisparo con raton Izq";
         title.position.set(0,0);
 
         this.physicsCharacter = new PhysicsContainer(); 
@@ -58,12 +66,14 @@ export class GameScene extends Container implements IUpdateable{
         this.createEnemy("GOBLIN");
         this.goblin = new Enemy(Texture.from("goblin"),200, new Point(800,800));
         this.goblin.position.set(800,800);
-        this.goblin.createPatrolRoute(this.goblin.position,100,2);
+        this.goblin.createPatrolRoute(this.goblin.position,100,4);
 
         this.addChild(background);
     
         this.addChild(this.physicsCharacter);
         this.addChild(this.goblin);
+
+        this.addChild(this.interactive_background);
 
         this.addChild(title);
         this.addChild(this.pauseButton);
@@ -72,16 +82,22 @@ export class GameScene extends Container implements IUpdateable{
     }
     
     public update(deltaTime: number, deltaFrame: number): void {
-        //Todo esto creo que no tiene porque ser responsabilidad de la escena pero desp se cambia.
         if(this.pauseState){
             return;
         }
-        this.player.update(deltaFrame, this.mousePos);
         const dt = deltaTime / 1000;
+        this.player.update(deltaFrame, this.mousePos);
         this.physicsCharacter.update(dt);
-
         this.goblin.update(dt, deltaFrame, this.physicsCharacter.position);
-        
+
+        for (let index = 0; index < this.character_projectiles.length; index++) {
+            this.character_projectiles[index].update(dt,deltaFrame);
+            if(this.character_projectiles[index].must_destroy){
+                const aux_projectile = this.character_projectiles[index];
+                this.character_projectiles.splice(index,1);
+                aux_projectile.destroy();
+            }
+        }
         this.mouseSpritePosition();
     }
     
@@ -104,5 +120,16 @@ export class GameScene extends Container implements IUpdateable{
             
         }
     }
+
+    private activateWeapon() : void{
+        if(this.player.hasAmmo()){
+            const texture_ammo : Texture = this.player.getAmmoTexture();
+            const aux_projectile = new Projectile(texture_ammo,this.physicsCharacter.position,this.mousePos);
+            this.character_projectiles.push(aux_projectile);
+            this.addChild(aux_projectile);
+        }
+    }
+
+
    
 }
