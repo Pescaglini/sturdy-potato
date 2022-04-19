@@ -13,7 +13,7 @@ export const assets = [
 
     //Escenario
     {url: "./decoration/background_1.png", name: "myBackground_1"},
-    //{url: "./decoration/tree_1.png", name: "tree_1"},
+    {url: "./decoration/tree_1.png", name: "tree_1"},
 
     //Enemigos
     {url: "./enemys/goblin.png", name: "goblin"},

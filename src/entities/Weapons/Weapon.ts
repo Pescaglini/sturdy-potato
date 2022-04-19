@@ -25,8 +25,8 @@ export class Weapon extends Container {
         return this.texture_projectile;
     }
 
-    public substract_ammo() : void{
-        this.ammo_count = this.ammo_count - 1;
+    public substract_ammo(cost : number) : void{
+        this.ammo_count = this.ammo_count - cost;
         console.log(this.ammo_count)
     }
 

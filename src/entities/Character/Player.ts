@@ -51,12 +51,8 @@ export class Player extends Container {
         this.rotateTowardMouse(mousePos);
     }
 
-    public hasAmmo() : Boolean{
-        return this.activeWeapon.hasAmmo();
-    }
-
-    public getAmmoTexture() : Texture{
-        return this.activeWeapon.getAmmoTexture();
+    public getActiveWeapon() : Weapon{
+        return this.activeWeapon;
     }
 
     private rotateTowardMouse(mouse : any) : void {

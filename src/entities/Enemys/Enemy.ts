@@ -30,6 +30,7 @@ export class Enemy extends Container {
         this.speed = 150;
         this.patrol_points = new Array<Point>();
         this.currentPatrolIndex = -1;
+        this.position.set(startPosition.x,startPosition.y);
         this.currentPatrolPoint = startPosition;
         this.addChild(this.enemy_sprite);
 
@@ -45,18 +46,21 @@ export class Enemy extends Container {
     }
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
+        const globalPlayerPos = this.parent.toGlobal(playerPos);
+        this.refreshPatrolPoint();
         this.timeControl(deltaSeconds);
-        this.detections(playerPos);
-        this.movimiento(playerPos, deltaSeconds);
+        this.detections(globalPlayerPos);
+        this.movimiento(globalPlayerPos, deltaSeconds);
+
     }
 
-    public createPatrolRoute(center : Point, radius : number, _extra = 0) : void{
+    public createPatrolRoute(radius : number, _extra = 0) : void{
         this.onPatrol = true;
         
-        const p1 = new Point(center.x - (radius),center.y + (radius));
-        const p2 = new Point(center.x - (radius),center.y - (radius));
-        const p3 = new Point(center.x + (radius),center.y - (radius));
-        const p4 = new Point(center.x + (radius),center.y + (radius));
+        const p1 = this.toGlobal(new Point(- radius,  radius));
+        const p2 = this.toGlobal(new Point(- radius,- radius));
+        const p3 = this.toGlobal(new Point(  radius,- radius));
+        const p4 = this.toGlobal(new Point(  radius,  radius));
         this.patrol_points.push(p1);
         this.patrol_points.push(p2);
         this.patrol_points.push(p3);
@@ -146,6 +150,10 @@ export class Enemy extends Container {
             this.currentPatrolIndex = 0;
         }
         this.currentPatrolPoint = this.patrol_points[this.currentPatrolIndex];
+    }
+
+    private refreshPatrolPoint() : void {
+        this.currentPatrolPoint = this.parent.toGlobal(this.patrol_points[this.currentPatrolIndex]);
     }
 
     private moveTowards(objectPoint: Point, deltaTime : number) : void {

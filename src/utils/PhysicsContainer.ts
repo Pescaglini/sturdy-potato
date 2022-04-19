@@ -6,6 +6,7 @@ export class PhysicsContainer extends Container{
     public speed : Point = new Point();
     public aceleration : Point = new Point();
     public isPlayer : Boolean;
+    //public worldPosition : Point;
 
     constructor(){
         super();
@@ -16,9 +17,9 @@ export class PhysicsContainer extends Container{
         this.aceleration.y = 0;
     }
 
-    public update(deltaSeconds: number){
+    public update(_deltaSeconds: number){
 
-        this.position.x = this.position.x + this.speed.x * deltaSeconds + (1/2) * this.aceleration.x * Math.pow(deltaSeconds,2);
+        /*this.position.x = this.position.x + this.speed.x * deltaSeconds + (1/2) * this.aceleration.x * Math.pow(deltaSeconds,2);
         this.position.y = this.position.y + this.speed.y * deltaSeconds + (1/2) * this.aceleration.y * Math.pow(deltaSeconds,2);
 
         this.speed.x = this.speed.x + this.aceleration.x * deltaSeconds;
@@ -26,7 +27,7 @@ export class PhysicsContainer extends Container{
 
         if(this.isPlayer){
             this.playerController(deltaSeconds);
-        }
+        }*/
 
     }
 
@@ -34,18 +35,25 @@ export class PhysicsContainer extends Container{
         this.isPlayer = act;
     }
 
-    private playerController(deltaSeconds : number){
+    public playerMovement(deltaSeconds : number) : Point{
+        let x = 0;
+        let y = 0;
         if(Keyboard.state.get("KeyA")){
-            this.position.x -= 400 * deltaSeconds;
+           this.position.x -= 400 * deltaSeconds;
+           x = 400 * deltaSeconds
         }
         if(Keyboard.state.get("KeyD")){
             this.position.x += 400 * deltaSeconds;
+            x = -400 * deltaSeconds
         }
         if(Keyboard.state.get("KeyW")){
             this.position.y -= 400 * deltaSeconds;
+            y = 400 * deltaSeconds
         }
         if(Keyboard.state.get("KeyS")){
             this.position.y += 400 * deltaSeconds;
+            y = -400 * deltaSeconds
         }
+        return new Point(x,y);
     }
 }
