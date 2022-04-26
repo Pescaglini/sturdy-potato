@@ -13,11 +13,12 @@ export class InteractiveSpace extends Container{
         this.addChild(this.space);
     }
     private onMouseUp(): void {
-        console.log("mouse up");
-        this.callback();
+        
+        //this.callback();
     }
     private onMouseDown(): void {
-        console.log("mouse Down");
+       
+        this.callback();
     }
     
 }

@@ -1,15 +1,15 @@
-import { Container, Point, Sprite, Text, Texture } from "pixi.js";
+import { Container, IDestroyOptions, Point, Sprite, Text, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
 import { Button } from "../ui/Button";
-import { PhysicsContainer } from "../utils/PhysicsContainer";
 import { Enemy } from "../entities/Enemys/Enemy";
 import { Projectile } from "../entities/Weapons/Projectile";
 import { InteractiveSpace } from "../utils/InteractiveSpace";
 import { FarmeableObject } from "../escenary/FarmeableObject";
 import { HEIGHT, WIDTH } from "..";
 import { Weapon } from "../entities/Weapons/Weapon";
+import { checkCollision, IHitbox } from "../utils/IHitbox";
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -26,8 +26,8 @@ export class GameScene extends Container implements IUpdateable{
 
     private interactive_background : InteractiveSpace;
     private character_projectiles :  Array<Projectile>;
+    private collision_objects :  Array<IHitbox>;
     
-    private physicsCharacter: PhysicsContainer;
     private goblin : Enemy;
     private tree : FarmeableObject;
 
@@ -41,14 +41,15 @@ export class GameScene extends Container implements IUpdateable{
 
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
-        this.player = new Player(); 
-        this.player.scale.set(1);
+        this.character_projectiles = new Array<Projectile>();
+
+        this.collision_objects = new Array<IHitbox>();
+
+        this.player = new Player();
 
         this.activeWeapon = this.player.getActiveWeapon();
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
-
-        this.character_projectiles = new Array<Projectile>();
 
         this.tree = new FarmeableObject(Texture.from("tree_1"),2,0.75);
         
@@ -73,19 +74,15 @@ export class GameScene extends Container implements IUpdateable{
         this.gui_pause.position.set(600,150);
         this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
 
-
-        this.physicsCharacter = new PhysicsContainer(); 
-        this.physicsCharacter.addChild(this.player);
-        this.physicsCharacter.activatePlayerControl(true);
-        this.physicsCharacter.position.set(WIDTH/2,HEIGHT/2);
         
         this.createEnemy("GOBLIN");
         this.goblin = new Enemy(Texture.from("goblin"),200, new Point(200,900));
         this.goblin.createPatrolRoute(100,4);
+        this.collision_objects.push(this.goblin);
 
         //Adders
         this.addChild(this.background);
-        this.addChild(this.physicsCharacter);
+        this.addChild(this.player);
         this.addChild(this.goblin);
         this.addChild(this.tree);
         this.addChild(this.interactive_background);
@@ -96,21 +93,34 @@ export class GameScene extends Container implements IUpdateable{
         this.worldAdder();
     }
     
+    public override destroy(options?: boolean | IDestroyOptions): void {
+        super.destroy(options);
+    }
+
     public update(deltaTime: number, deltaFrame: number): void {
         if(this.pauseState){
             return;
         }
         const dt = deltaTime / 1000;
-        this.player.update(deltaFrame, this.mousePos);
-        this.physicsCharacter.update(dt);
-        this.goblin.update(dt, deltaFrame, this.physicsCharacter.position);
+        this.player.update(deltaFrame, dt, this.mousePos);
+        this.goblin.update(dt, deltaFrame, this.player.position);
         this.projectileUpdates(dt,deltaFrame);
+        this.playerCollisionUpdate();
         this.setMouseSpritePosition();
-        this.worldMovement(dt)
+        this.worldMovement();
     }
 
-    private worldMovement(dt : number) : void{
-        const worldSum = this.physicsCharacter.playerMovement(dt);
+    private playerCollisionUpdate() : void{
+        for (let object of this.collision_objects) {
+            const overlap = checkCollision(this.player,object);
+            if(overlap != null){
+                this.player.CollisionRestrictions(overlap);
+            }
+        }
+    }
+
+    private worldMovement() : void{
+        const worldSum = this.player.returnMovement();
         this.world.position.x += worldSum.x;
         this.world.position.y += worldSum.y;
     }
@@ -158,10 +168,8 @@ export class GameScene extends Container implements IUpdateable{
 
     private worldAdder() : void{
         this.world.addChild(this.goblin);
-        this.world.addChild(this.physicsCharacter);
-        //this.world.addChild(this.player);
+        this.world.addChild(this.player);
         this.world.addChild(this.tree);
-        //thiworld.s.addChild(title);
     }
 
 

@@ -1,13 +1,16 @@
-import { Container, Graphics, Point, Sprite, Texture } from "pixi.js";
+import { Container, Graphics, Point, Rectangle, Sprite, Texture } from "pixi.js";
+import { IHitbox } from "../../utils/IHitbox";
 
 
-export class Enemy extends Container {
+export class Enemy extends Container implements IHitbox {
     private enemy_sprite : Sprite;
+    private hitBox : Graphics;
     private patrol_points :  Array<Point>;
     private currentPatrolPoint : Point;
     private currentPatrolIndex : number;
     private onPatrol : Boolean;
     private isPlayerDetected : Boolean;
+    private isMovementAllowed : Boolean;
     private speed : number;
     private detectionRadius : number;
     private debuggin : Boolean;
@@ -19,20 +22,27 @@ export class Enemy extends Container {
     constructor(texture_name : Texture, detectionRadius : number, startPosition : Point){
         super();
         this.onPatrol = false;
-        this.debuggin = true;
+        this.debuggin = false;
         this.isPlayerDetected = false;
         this.isWaiting = false;
+        this.isMovementAllowed = true;
         this.detectionRadius = detectionRadius;
         this.patrol_timer = 0;
         this.enemy_sprite = Sprite.from(texture_name);
         this.enemy_sprite.anchor.set(0.5);
         this.enemy_sprite.scale.set(2);
+        this.hitBox = new Graphics();
+        this.hitBox.beginFill(0xFFFF00,0.3);
+        this.hitBox.drawRect(0,0,60,60);
+        this.hitBox.position.set(-30,-30);
         this.speed = 150;
         this.patrol_points = new Array<Point>();
         this.currentPatrolIndex = -1;
         this.position.set(startPosition.x,startPosition.y);
         this.currentPatrolPoint = startPosition;
+        
         this.addChild(this.enemy_sprite);
+        this.addChild(this.hitBox);
 
         this.patrolRouteDebug = new Graphics();
         if(this.debuggin){
@@ -52,6 +62,10 @@ export class Enemy extends Container {
         this.detections(globalPlayerPos);
         this.movimiento(globalPlayerPos, deltaSeconds);
 
+    }
+
+    public getHitbox() : Rectangle{
+        return this.hitBox.getBounds()
     }
 
     public createPatrolRoute(radius : number, _extra = 0) : void{
@@ -116,13 +130,21 @@ export class Enemy extends Container {
 
     private detections(playerPos : Point){
         const distanceToPlayer = this.distanceTo(playerPos);
+        this.isMovementAllowed = true;
         if(distanceToPlayer <= this.detectionRadius){
-            this.isPlayerDetected = true;
+            this.isPlayerDetected = true
+            if(distanceToPlayer < 50){
+                this.isMovementAllowed = false;
+            }else{
+                this.isMovementAllowed = true;
+            }
+            this.onPatrol = false;
         }
         if(distanceToPlayer > (this.detectionRadius)){
             this.isPlayerDetected = false;
             this.onPatrol = true;
         }
+        
         if(this.onPatrol && !this.isWaiting){
             const disntanceToPatrolPoint = this.distanceTo(this.currentPatrolPoint);
             if(disntanceToPatrolPoint < 1){
@@ -137,7 +159,9 @@ export class Enemy extends Container {
     private movimiento(playerPos : Point, deltaTime : number) : void{
         if(this.isPlayerDetected){
             this.rotateTowards(playerPos);
-            this.moveTowards(playerPos, deltaTime);
+            if(this.isMovementAllowed){
+                this.moveTowards(playerPos, deltaTime);
+            }
         }else if(this.onPatrol && this.patrol_timer > 2){
             this.rotateTowards(this.currentPatrolPoint);
             this.moveTowards(this.currentPatrolPoint, deltaTime);
@@ -158,8 +182,8 @@ export class Enemy extends Container {
 
     private moveTowards(objectPoint: Point, deltaTime : number) : void {
         const rot = this.calculateRotationTo(objectPoint);
-        this.enemy_sprite.x = this.enemy_sprite.x + this.speed  * Math.cos(rot - 3.14/2) * deltaTime;
-	    this.enemy_sprite.y = this.enemy_sprite.y + this.speed  * Math.sin(rot - 3.14/2) * deltaTime;    
+        this.x = this.x + this.speed  * Math.cos(rot - 3.14/2) * deltaTime;
+	    this.y = this.y + this.speed  * Math.sin(rot - 3.14/2) * deltaTime;    
     }
 
     private rotateTowards(objectPoint: Point) : void {
