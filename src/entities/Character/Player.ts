@@ -174,7 +174,12 @@ export class Player extends Container implements IHitbox {
     public impactObjectAdder(obj : any) : void{
         this.addChild(obj);
     }
-
+    public isHitteable(): Boolean {
+        if(!this.isDead){
+            return true;
+        }
+        return false;
+    }
     public getActiveWeapon() : Weapon{
         return this.activeWeapon;
     }

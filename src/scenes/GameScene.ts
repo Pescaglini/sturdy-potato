@@ -78,7 +78,7 @@ export class GameScene extends Container implements IUpdateable{
 
         
         this.createEnemy("GOBLIN");
-        this.goblin = new Goblin(Texture.from("goblin"),200, new Point(200,900));
+        this.goblin = new Goblin(200, new Point(200,900));
         this.goblin.createPatrolRoute(100,4);
         this.enemys_array.push(this.goblin);
         this.player_collision_objects.push(this.goblin);
@@ -133,19 +133,23 @@ export class GameScene extends Container implements IUpdateable{
     private enemyUpdates() : void{
         for (let index = 0; index < this.enemys_array.length; index++) {
             const enemigo = this.enemys_array[index];
-            switch (enemigo.getEnemyType()) {
-                case "GOBLIN":
-                    if(enemigo.isEnemyDead()){        
-                        this.enemys_array.splice(index,1);
-                        enemigo.destroy();    
-                    }else if(enemigo.isEnemyAttacking()){
-                        console.log("Goblin: wasaaa,te pego");
-                    }       
-                    break;
-                default:
-                    break;
+            if(enemigo.isEnemyDestroyable()){        
+                this.enemys_array.splice(index,1);
+                enemigo.destroy(); 
             }
-            
+            if(!enemigo.isEnemyDead()){        
+                switch (enemigo.getEnemyType()) {
+                    case "GOBLIN":
+                        if(enemigo.isEnemyAttacking()){
+                            console.log("Goblin: wasaaa,te pego");
+                        }       
+                        break;
+                    default:
+                        break;
+                }
+            }else{
+                enemigo.changeDeadAnimation();
+            }
         }
     }
 
@@ -156,15 +160,17 @@ export class GameScene extends Container implements IUpdateable{
             //TENGO QUE IMPLEMENTAR UN QUADTREE O ME VA A REVENTAR CUANDO TENGA MUCHOS ENEMIGOS :) O(n^n)
             if(!projectile.isCollisionHappened()){
                 for (let object of this.player_collision_objects){
-                    const overlap = checkCollision_CC(projectile,object);
-                    if(overlap != null){
-                        projectile.CollisionDetected();
-                        object.takeDamage(projectile.getDamage())
-                        //Mover todo esto al enemigo
-                        const rand_x = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
-                        const rand_y = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
-                        projectile.position.set(rand_x,rand_y);
-                        object.impactObjectAdder(projectile);
+                    if(object.isHitteable()){
+                        const overlap = checkCollision_CC(projectile,object);
+                        if(overlap != null){
+                            projectile.CollisionDetected();
+                            object.takeDamage(projectile.getDamage())
+                            //Mover todo esto al enemigo
+                            const rand_x = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
+                            const rand_y = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
+                            projectile.position.set(rand_x,rand_y);
+                            object.impactObjectAdder(projectile);
+                        }
                     }
                 }
             }
@@ -199,7 +205,7 @@ export class GameScene extends Container implements IUpdateable{
 
     private activateWeapon() : void{
         if(this.activeWeapon.hasAmmo()){
-            this.activeWeapon.substract_ammo(0); //CAMBIAR
+            this.activeWeapon.substract_ammo(1);
             const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
             const aux_projectile = new Projectile(texture_ammo,this.player.getGlobalPosition(),this.mousePos);
             this.character_projectiles.push(aux_projectile);

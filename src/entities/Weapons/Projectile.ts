@@ -50,6 +50,10 @@ export class Projectile extends Container implements IHitbox {
         this.addChild(this.hitCircle_grap);
     }
     
+    public isHitteable(): Boolean {
+        return false;
+    }
+    
     public getHitbox() : Rectangle{
         return this.hitBox.getBounds()
     }

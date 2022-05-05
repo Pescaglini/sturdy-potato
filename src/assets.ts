@@ -16,7 +16,9 @@ export const assets = [
     {url: "./decoration/tree_1.png", name: "tree_1"},
 
     //Enemigos
+    {url: "./enemys/default_enemy_texture.png", name: "default_enemy_texture"},
     {url: "./enemys/goblin.png", name: "goblin"},
+    {url: "./enemys/goblinMuerte.png", name: "goblinDead"},
     {url: "./enemys/gordoTutuca.png", name: "gordoTutuca"},
     
     //Utils

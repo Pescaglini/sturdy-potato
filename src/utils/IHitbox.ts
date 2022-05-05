@@ -6,6 +6,7 @@ export interface IHitbox {
     getHitCircle_Rec() : Rectangle;
     impactObjectAdder(obj : any) : void;
     takeDamage(damage : number) : void;
+    isHitteable() : Boolean;
     readonly OBJECT_TYPE : String;
 }
 export function checkCollision_RR(objA : IHitbox, objB : IHitbox) : Rectangle | null{

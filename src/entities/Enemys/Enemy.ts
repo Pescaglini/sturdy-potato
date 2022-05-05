@@ -3,7 +3,8 @@ import { IHitbox } from "../../utils/IHitbox";
 
 
 export class Enemy extends Container implements IHitbox {
-    private enemy_sprite : Sprite;
+    protected enemy_sprite : Sprite;
+    protected enemy_dead_sprite : Sprite;
     private hitBox : Graphics;
     private hitCircle_grap: Graphics;
     private hitCircle: Circle;
@@ -17,6 +18,7 @@ export class Enemy extends Container implements IHitbox {
     private isAttackingAllowed : Boolean;
     private isAttacking : Boolean;
     private isDead : Boolean;
+    private isDestroyable : Boolean;
     private debuggin : Boolean;
     private speed : number;
     protected max_health : number;
@@ -25,6 +27,7 @@ export class Enemy extends Container implements IHitbox {
     private patrol_timer : number;
     protected attackRadius : number;
     private attack_timer : number;
+    private dead_timer : number;
     protected timeNeededToAttack : number;
     
 
@@ -33,7 +36,7 @@ export class Enemy extends Container implements IHitbox {
     OBJECT_TYPE = "ENEMY";
     protected ENEMY_TYPE = "GOBLIN";
 
-    constructor(texture_name : Texture, detectionRadius : number, startPosition : Point){
+    constructor(detectionRadius : number, startPosition : Point){
         super();
         this.onPatrol = false;
         this.debuggin = false;
@@ -43,6 +46,7 @@ export class Enemy extends Container implements IHitbox {
         this.isAttackingAllowed = false;
         this.isAttacking = false;
         this.isDead = false;
+        this.isDestroyable = false;
         this.detectionRadius = detectionRadius;
         this.max_health = 100;
         this.current_health = this.max_health;
@@ -50,12 +54,11 @@ export class Enemy extends Container implements IHitbox {
         this.patrol_timer = 0;
         this.attack_timer = 0;
         this.attackRadius = 0;
+        this.dead_timer = 0;
         this.timeNeededToAttack = 3;
 
-        this.enemy_sprite = Sprite.from(texture_name);
-        this.enemy_sprite.anchor.set(0.5);
-        this.enemy_sprite.scale.set(2);
-        this.enemy_sprite.name = "enemy_sprite";
+        this.enemy_sprite = Sprite.from(Texture.from("default_enemy_texture"));
+        this.enemy_dead_sprite = Sprite.from(Texture.from("default_enemy_texture"));
 
         this.hitBox = new Graphics();
         this.hitBox.beginFill(0xFFFF00,0.0);
@@ -74,7 +77,6 @@ export class Enemy extends Container implements IHitbox {
         this.position.set(startPosition.x,startPosition.y);
         this.currentPatrolPoint = startPosition;
         
-        this.addChild(this.enemy_sprite);
         this.addChild(this.hitBox);
         this.addChild(this.hitCircle_grap);
 
@@ -90,7 +92,13 @@ export class Enemy extends Container implements IHitbox {
     }
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
-        if(this.isDead){return;}
+        if(this.isDead){
+            this.dead_timer += deltaSeconds;
+            if(this.dead_timer >= 5){
+                this.isDestroyable = true;
+            }
+            return;
+        }
         const globalPlayerPos = this.parent.toGlobal(playerPos);
         this.refreshPatrolPoint();
         this.timeControl(deltaSeconds);
@@ -122,8 +130,19 @@ export class Enemy extends Container implements IHitbox {
         this.addChildAt(obj,0);
     }
 
+    public isHitteable(): Boolean {
+        if(!this.isDead){
+            return true;
+        }
+        return false;
+    }
+
     public isEnemyDead() : Boolean{
         return this.isDead;
+    }
+
+    public isEnemyDestroyable() : Boolean{
+        return this.isDestroyable;
     }
 
     public createPatrolRoute(radius : number, _extra = 0) : void{
@@ -172,6 +191,10 @@ export class Enemy extends Container implements IHitbox {
         if(this.current_health <= 0){
             this.isDead = true;
         } 
+    }
+
+    public changeDeadAnimation() : void{
+        throw new Error("Implementa el cambio de Sprite de muerte gato");
     }
 
     public isEnemyAttacking() : Boolean{
