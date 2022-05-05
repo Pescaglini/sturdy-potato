@@ -1,23 +1,37 @@
-import { Container, Graphics, Point, Rectangle, Sprite, Texture } from "pixi.js";
+import { Circle, Container, Graphics, Point, Rectangle, Sprite, Texture } from "pixi.js";
 import { IHitbox } from "../../utils/IHitbox";
 
 
 export class Enemy extends Container implements IHitbox {
     private enemy_sprite : Sprite;
     private hitBox : Graphics;
+    private hitCircle_grap: Graphics;
+    private hitCircle: Circle;
     private patrol_points :  Array<Point>;
     private currentPatrolPoint : Point;
     private currentPatrolIndex : number;
     private onPatrol : Boolean;
     private isPlayerDetected : Boolean;
     private isMovementAllowed : Boolean;
-    private speed : number;
-    private detectionRadius : number;
-    private debuggin : Boolean;
-    private patrol_timer : number;
     private isWaiting : Boolean;
+    private isAttackingAllowed : Boolean;
+    private isAttacking : Boolean;
+    private isDead : Boolean;
+    private debuggin : Boolean;
+    private speed : number;
+    protected max_health : number;
+    protected current_health : number;
+    private detectionRadius : number;
+    private patrol_timer : number;
+    protected attackRadius : number;
+    private attack_timer : number;
+    protected timeNeededToAttack : number;
+    
 
     private patrolRouteDebug : Graphics;
+
+    OBJECT_TYPE = "ENEMY";
+    protected ENEMY_TYPE = "GOBLIN";
 
     constructor(texture_name : Texture, detectionRadius : number, startPosition : Point){
         super();
@@ -26,16 +40,35 @@ export class Enemy extends Container implements IHitbox {
         this.isPlayerDetected = false;
         this.isWaiting = false;
         this.isMovementAllowed = true;
+        this.isAttackingAllowed = false;
+        this.isAttacking = false;
+        this.isDead = false;
         this.detectionRadius = detectionRadius;
+        this.max_health = 100;
+        this.current_health = this.max_health;
+
         this.patrol_timer = 0;
+        this.attack_timer = 0;
+        this.attackRadius = 0;
+        this.timeNeededToAttack = 3;
+
         this.enemy_sprite = Sprite.from(texture_name);
         this.enemy_sprite.anchor.set(0.5);
         this.enemy_sprite.scale.set(2);
+        this.enemy_sprite.name = "enemy_sprite";
+
         this.hitBox = new Graphics();
-        this.hitBox.beginFill(0xFFFF00,0.3);
-        this.hitBox.drawRect(0,0,60,60);
-        this.hitBox.position.set(-30,-30);
-        this.speed = 150;
+        this.hitBox.beginFill(0xFFFF00,0.0);
+        this.hitBox.drawRect(0,0,50,50);
+        this.hitBox.position.set(-25,-20);
+
+        this.hitCircle_grap = new Graphics();
+        this.hitCircle_grap.beginFill(0x0000FF,0.0);
+        this.hitCircle_grap.drawCircle(30,35,25);
+        this.hitCircle_grap.position.set(-30,-30);
+        this.hitCircle = new Circle(0,0,30);
+
+        this.speed = 250;
         this.patrol_points = new Array<Point>();
         this.currentPatrolIndex = -1;
         this.position.set(startPosition.x,startPosition.y);
@@ -43,6 +76,7 @@ export class Enemy extends Container implements IHitbox {
         
         this.addChild(this.enemy_sprite);
         this.addChild(this.hitBox);
+        this.addChild(this.hitCircle_grap);
 
         this.patrolRouteDebug = new Graphics();
         if(this.debuggin){
@@ -56,16 +90,40 @@ export class Enemy extends Container implements IHitbox {
     }
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
+        if(this.isDead){return;}
         const globalPlayerPos = this.parent.toGlobal(playerPos);
         this.refreshPatrolPoint();
         this.timeControl(deltaSeconds);
         this.detections(globalPlayerPos);
         this.movimiento(globalPlayerPos, deltaSeconds);
-
     }
 
     public getHitbox() : Rectangle{
         return this.hitBox.getBounds()
+    }
+
+    public getHitCircle_Rad(): number {
+        return this.hitCircle.radius;
+    }
+
+    public getHitCircle_Rec(): Rectangle {
+        return this.hitCircle_grap.getBounds();
+    }
+
+    public getEnemySprite() : Sprite{
+        return this.enemy_sprite;
+    }
+
+    public getEnemyType() : String{
+        return this.ENEMY_TYPE;
+    }
+
+    public impactObjectAdder(obj : any) : void{
+        this.addChildAt(obj,0);
+    }
+
+    public isEnemyDead() : Boolean{
+        return this.isDead;
     }
 
     public createPatrolRoute(radius : number, _extra = 0) : void{
@@ -109,7 +167,22 @@ export class Enemy extends Container implements IHitbox {
         }
     }
 
-    private shufflePatrolRoute(){
+    public takeDamage(damage : number) : void{
+        this.current_health -= damage;
+        if(this.current_health <= 0){
+            this.isDead = true;
+        } 
+    }
+
+    public isEnemyAttacking() : Boolean{
+        const attack = this.isAttacking;
+        if(this.isAttacking){
+            this.isAttackingAllowed = false;
+        }
+        return attack;
+    }
+
+    protected shufflePatrolRoute(){
         let currentIndex = this.patrol_points.length,  randomIndex;
         while (currentIndex != 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
@@ -119,24 +192,35 @@ export class Enemy extends Container implements IHitbox {
         }
     }
     
-    private timeControl(deltaSeconds : number){
+    protected timeControl(deltaSeconds : number){
         this.patrol_timer += deltaSeconds;
         if(this.patrol_timer < 2){
             this.isWaiting = true;
         }else{
             this.isWaiting = false;
         }
+        if(this.isAttackingAllowed){
+            this.attack_timer += deltaSeconds;
+            if(this.attack_timer >= this.timeNeededToAttack){
+                this.isAttacking = true;
+            }
+        }else{
+            this.attack_timer = 0;
+            this.isAttacking = false;
+        }
+        
     }
 
-    private detections(playerPos : Point){
+    protected detections(playerPos : Point,){
         const distanceToPlayer = this.distanceTo(playerPos);
         this.isMovementAllowed = true;
+        this.isAttackingAllowed = false;
+
         if(distanceToPlayer <= this.detectionRadius){
             this.isPlayerDetected = true
-            if(distanceToPlayer < 50){
+            if(distanceToPlayer < this.attackRadius){
                 this.isMovementAllowed = false;
-            }else{
-                this.isMovementAllowed = true;
+                this.isAttackingAllowed = true;
             }
             this.onPatrol = false;
         }
@@ -156,7 +240,7 @@ export class Enemy extends Container implements IHitbox {
 
     }
 
-    private movimiento(playerPos : Point, deltaTime : number) : void{
+    protected movimiento(playerPos : Point, deltaTime : number) : void{
         if(this.isPlayerDetected){
             this.rotateTowards(playerPos);
             if(this.isMovementAllowed){
@@ -168,7 +252,7 @@ export class Enemy extends Container implements IHitbox {
         }
     }
 
-    private assingNextPatrolPoint() : void {
+    protected assingNextPatrolPoint() : void {
         this.currentPatrolIndex++;
         if(this.currentPatrolIndex >= this.patrol_points.length){
             this.currentPatrolIndex = 0;
@@ -176,22 +260,22 @@ export class Enemy extends Container implements IHitbox {
         this.currentPatrolPoint = this.patrol_points[this.currentPatrolIndex];
     }
 
-    private refreshPatrolPoint() : void {
+    protected refreshPatrolPoint() : void {
         this.currentPatrolPoint = this.parent.toGlobal(this.patrol_points[this.currentPatrolIndex]);
     }
 
-    private moveTowards(objectPoint: Point, deltaTime : number) : void {
+    protected moveTowards(objectPoint: Point, deltaTime : number) : void {
         const rot = this.calculateRotationTo(objectPoint);
         this.x = this.x + this.speed  * Math.cos(rot - 3.14/2) * deltaTime;
 	    this.y = this.y + this.speed  * Math.sin(rot - 3.14/2) * deltaTime;    
     }
 
-    private rotateTowards(objectPoint: Point) : void {
+    protected rotateTowards(objectPoint: Point) : void {
         const rot = this.calculateRotationTo(objectPoint);
         this.enemy_sprite.rotation = rot;
     }
 
-    private calculateRotationTo(objectPoint : Point) : number{
+    protected calculateRotationTo(objectPoint : Point) : number{
         const globalEnemyPos = this.toGlobal(this.enemy_sprite.position);
         const distance_x = objectPoint.x - globalEnemyPos.x;
         const distance_y = objectPoint.y - globalEnemyPos.y;
@@ -199,7 +283,7 @@ export class Enemy extends Container implements IHitbox {
         return rot;
     }
 
-    private distanceTo(objectPoint : Point) : number{
+    protected distanceTo(objectPoint : Point) : number{
         const globalEnemyPos = this.toGlobal(this.enemy_sprite.position);
         const distance_x = objectPoint.x - globalEnemyPos.x;
         const distance_y = objectPoint.y - globalEnemyPos.y;

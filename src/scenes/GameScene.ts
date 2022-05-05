@@ -7,9 +7,9 @@ import { Enemy } from "../entities/Enemys/Enemy";
 import { Projectile } from "../entities/Weapons/Projectile";
 import { InteractiveSpace } from "../utils/InteractiveSpace";
 import { FarmeableObject } from "../escenary/FarmeableObject";
-import { HEIGHT, WIDTH } from "..";
 import { Weapon } from "../entities/Weapons/Weapon";
-import { checkCollision, IHitbox } from "../utils/IHitbox";
+import { checkCollision_CC, checkCollision_RR, IHitbox } from "../utils/IHitbox";
+import { Goblin } from "../entities/Enemys/Goblin";
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -26,7 +26,8 @@ export class GameScene extends Container implements IUpdateable{
 
     private interactive_background : InteractiveSpace;
     private character_projectiles :  Array<Projectile>;
-    private collision_objects :  Array<IHitbox>;
+    private player_collision_objects :  Array<IHitbox>;
+    private enemys_array :  Array<Enemy>;
     
     private goblin : Enemy;
     private tree : FarmeableObject;
@@ -43,7 +44,9 @@ export class GameScene extends Container implements IUpdateable{
 
         this.character_projectiles = new Array<Projectile>();
 
-        this.collision_objects = new Array<IHitbox>();
+        this.player_collision_objects = new Array<IHitbox>();
+
+        this.enemys_array = new Array<Enemy>();
 
         this.player = new Player();
 
@@ -52,7 +55,6 @@ export class GameScene extends Container implements IUpdateable{
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
         this.tree = new FarmeableObject(Texture.from("tree_1"),2,0.75);
-        
 
         this.pauseState = false;
         
@@ -76,9 +78,10 @@ export class GameScene extends Container implements IUpdateable{
 
         
         this.createEnemy("GOBLIN");
-        this.goblin = new Enemy(Texture.from("goblin"),200, new Point(200,900));
+        this.goblin = new Goblin(Texture.from("goblin"),200, new Point(200,900));
         this.goblin.createPatrolRoute(100,4);
-        this.collision_objects.push(this.goblin);
+        this.enemys_array.push(this.goblin);
+        this.player_collision_objects.push(this.goblin);
 
         //Adders
         this.addChild(this.background);
@@ -105,19 +108,21 @@ export class GameScene extends Container implements IUpdateable{
         this.player.update(deltaFrame, dt, this.mousePos);
         this.goblin.update(dt, deltaFrame, this.player.position);
         this.projectileUpdates(dt,deltaFrame);
+        this.enemyUpdates();
         this.playerCollisionUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
     }
 
     private playerCollisionUpdate() : void{
-        for (let object of this.collision_objects) {
-            const overlap = checkCollision(this.player,object);
+        for (let object of this.player_collision_objects) {
+            const overlap = checkCollision_RR(this.player,object);
             if(overlap != null){
-                this.player.CollisionRestrictions(overlap);
+                //this.player.CollisionDetected(overlap,1);
             }
         }
     }
+
 
     private worldMovement() : void{
         const worldSum = this.player.returnMovement();
@@ -125,9 +130,44 @@ export class GameScene extends Container implements IUpdateable{
         this.world.position.y += worldSum.y;
     }
 
+    private enemyUpdates() : void{
+        for (let index = 0; index < this.enemys_array.length; index++) {
+            const enemigo = this.enemys_array[index];
+            switch (enemigo.getEnemyType()) {
+                case "GOBLIN":
+                    if(enemigo.isEnemyDead()){        
+                        this.enemys_array.splice(index,1);
+                        enemigo.destroy();    
+                    }else if(enemigo.isEnemyAttacking()){
+                        console.log("Goblin: wasaaa,te pego");
+                    }       
+                    break;
+                default:
+                    break;
+            }
+            
+        }
+    }
+
     private projectileUpdates(dt: number, deltaFrame: number) : void{
         for (let index = 0; index < this.character_projectiles.length; index++) {
-            this.character_projectiles[index].update(dt,deltaFrame);
+            const projectile = this.character_projectiles[index];
+            projectile.update(dt,deltaFrame);
+            //TENGO QUE IMPLEMENTAR UN QUADTREE O ME VA A REVENTAR CUANDO TENGA MUCHOS ENEMIGOS :) O(n^n)
+            if(!projectile.isCollisionHappened()){
+                for (let object of this.player_collision_objects){
+                    const overlap = checkCollision_CC(projectile,object);
+                    if(overlap != null){
+                        projectile.CollisionDetected();
+                        object.takeDamage(projectile.getDamage())
+                        //Mover todo esto al enemigo
+                        const rand_x = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
+                        const rand_y = Math.floor(Math.random() * (-20 - 20 + 1) + 20);
+                        projectile.position.set(rand_x,rand_y);
+                        object.impactObjectAdder(projectile);
+                    }
+                }
+            }
             if(this.character_projectiles[index].must_destroy){
                 const aux_projectile = this.character_projectiles[index];
                 this.character_projectiles.splice(index,1);
@@ -148,6 +188,7 @@ export class GameScene extends Container implements IUpdateable{
     private setMouseSpritePosition() : void{
         this.mousePointer.position.x = this.mousePos.x - (this.mousePointer.width/2);
         this.mousePointer.position.y = this.mousePos.y - (this.mousePointer.height/2);
+        this.addChild(this.mousePointer);
     }
 
     private createEnemy(enemy_name : String) : void{
@@ -158,11 +199,13 @@ export class GameScene extends Container implements IUpdateable{
 
     private activateWeapon() : void{
         if(this.activeWeapon.hasAmmo()){
-            this.activeWeapon.substract_ammo(1);
+            this.activeWeapon.substract_ammo(0); //CAMBIAR
             const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
-            const aux_projectile = new Projectile(texture_ammo,new Point(WIDTH/2,HEIGHT/2),this.mousePos);
+            const aux_projectile = new Projectile(texture_ammo,this.player.getGlobalPosition(),this.mousePos);
             this.character_projectiles.push(aux_projectile);
-            this.addChild(aux_projectile);
+            this.addChildAt(aux_projectile,1);
+            //this.world.addChild(aux_projectile);
+            
         }
     }
 
