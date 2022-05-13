@@ -1,4 +1,4 @@
-import { Container, IDestroyOptions, Point, Sprite, Text, Texture } from "pixi.js";
+import { Container, IDestroyOptions, Sprite, Text, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
@@ -9,7 +9,9 @@ import { InteractiveSpace } from "../utils/InteractiveSpace";
 import { FarmeableObject } from "../escenary/FarmeableObject";
 import { Weapon } from "../entities/Weapons/Weapon";
 import { checkCollision_CC, checkCollision_RR, IHitbox } from "../utils/IHitbox";
+import { EnemySpawn } from "../entities/Enemys/EnemySpawn";
 import { Goblin } from "../entities/Enemys/Goblin";
+
 
 
 export class GameScene extends Container implements IUpdateable{
@@ -28,9 +30,9 @@ export class GameScene extends Container implements IUpdateable{
     private character_projectiles :  Array<Projectile>;
     private player_collision_objects :  Array<IHitbox>;
     private enemys_array :  Array<Enemy>;
-    
-    private goblin : Enemy;
+
     private tree : FarmeableObject;
+    private enemySpawn : EnemySpawn;
 
     private world : Container;
     
@@ -49,6 +51,9 @@ export class GameScene extends Container implements IUpdateable{
         this.enemys_array = new Array<Enemy>();
 
         this.player = new Player();
+
+        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),500);
+        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),3);
 
         this.activeWeapon = this.player.getActiveWeapon();
 
@@ -76,17 +81,11 @@ export class GameScene extends Container implements IUpdateable{
         this.gui_pause.position.set(600,150);
         this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
 
-        
-        this.createEnemy("GOBLIN");
-        this.goblin = new Goblin(200, new Point(200,900));
-        this.goblin.createPatrolRoute(100,4);
-        this.enemys_array.push(this.goblin);
-        this.player_collision_objects.push(this.goblin);
 
         //Adders
         this.addChild(this.background);
+        this.addChild(this.enemySpawn);
         this.addChild(this.player);
-        this.addChild(this.goblin);
         this.addChild(this.tree);
         this.addChild(this.interactive_background);
         this.addChild(this.title);
@@ -106,12 +105,13 @@ export class GameScene extends Container implements IUpdateable{
         }
         const dt = deltaTime / 1000;
         this.player.update(deltaFrame, dt, this.mousePos);
-        this.goblin.update(dt, deltaFrame, this.player.position);
         this.projectileUpdates(dt,deltaFrame);
-        this.enemyUpdates();
+        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.player_collision_objects,this.world);
+        this.enemyUpdates(dt,deltaFrame);
         this.playerCollisionUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
+        console.log(this.player_collision_objects.length);
     }
 
     private playerCollisionUpdate() : void{
@@ -130,11 +130,13 @@ export class GameScene extends Container implements IUpdateable{
         this.world.position.y += worldSum.y;
     }
 
-    private enemyUpdates() : void{
+    private enemyUpdates(deltaSeconds: number, deltaFrame: number) : void{
         for (let index = 0; index < this.enemys_array.length; index++) {
             const enemigo = this.enemys_array[index];
+            enemigo.update(deltaSeconds, deltaFrame,this.player.position);
             if(enemigo.isEnemyDestroyable()){        
                 this.enemys_array.splice(index,1);
+                //enemigo.destroy({children : true});
                 enemigo.destroy(); 
             }
             if(!enemigo.isEnemyDead()){        
@@ -177,7 +179,7 @@ export class GameScene extends Container implements IUpdateable{
             if(this.character_projectiles[index].must_destroy){
                 const aux_projectile = this.character_projectiles[index];
                 this.character_projectiles.splice(index,1);
-                aux_projectile.destroy();
+                aux_projectile.destroy({children : true});
             }
         }
     }
@@ -197,12 +199,6 @@ export class GameScene extends Container implements IUpdateable{
         this.addChild(this.mousePointer);
     }
 
-    private createEnemy(enemy_name : String) : void{
-        if(enemy_name == "GOBLIN"){
-            
-        }
-    }
-
     private activateWeapon() : void{
         if(this.activeWeapon.hasAmmo()){
             this.activeWeapon.substract_ammo(1);
@@ -216,7 +212,7 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     private worldAdder() : void{
-        this.world.addChild(this.goblin);
+        this.world.addChild(this.enemySpawn);
         this.world.addChild(this.player);
         this.world.addChild(this.tree);
     }

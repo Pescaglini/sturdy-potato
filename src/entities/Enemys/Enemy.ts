@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Point, Rectangle, Sprite, Texture } from "pixi.js";
 import { IHitbox } from "../../utils/IHitbox";
+import { EnemySpawn } from "./EnemySpawn";
 
 
 export class Enemy extends Container implements IHitbox {
@@ -21,14 +22,19 @@ export class Enemy extends Container implements IHitbox {
     private isDestroyable : Boolean;
     private debuggin : Boolean;
     private speed : number;
+    private speed_patrol : number;
+    private speed_chase : number;
     protected max_health : number;
     protected current_health : number;
     private detectionRadius : number;
     private patrol_timer : number;
+    protected waiting_time : number;
     protected attackRadius : number;
     private attack_timer : number;
     private dead_timer : number;
     protected timeNeededToAttack : number;
+    private attention_timer : number;
+    protected spawn : EnemySpawn;
     
 
     private patrolRouteDebug : Graphics;
@@ -36,7 +42,7 @@ export class Enemy extends Container implements IHitbox {
     OBJECT_TYPE = "ENEMY";
     protected ENEMY_TYPE = "GOBLIN";
 
-    constructor(detectionRadius : number, startPosition : Point){
+    constructor(detectionRadius : number, startPosition : Point, spawn : EnemySpawn){
         super();
         this.onPatrol = false;
         this.debuggin = false;
@@ -51,10 +57,12 @@ export class Enemy extends Container implements IHitbox {
         this.max_health = 100;
         this.current_health = this.max_health;
 
+        this.waiting_time = 0;
         this.patrol_timer = 0;
         this.attack_timer = 0;
         this.attackRadius = 0;
         this.dead_timer = 0;
+        this.attention_timer = 0;
         this.timeNeededToAttack = 3;
 
         this.enemy_sprite = Sprite.from(Texture.from("default_enemy_texture"));
@@ -71,11 +79,15 @@ export class Enemy extends Container implements IHitbox {
         this.hitCircle_grap.position.set(-30,-30);
         this.hitCircle = new Circle(0,0,30);
 
-        this.speed = 250;
+        this.speed_patrol = 200;
+        this.speed_chase = 300;
+        this.speed = this.speed_patrol;
         this.patrol_points = new Array<Point>();
         this.currentPatrolIndex = -1;
         this.position.set(startPosition.x,startPosition.y);
         this.currentPatrolPoint = startPosition;
+
+        this.spawn = spawn;
         
         this.addChild(this.hitBox);
         this.addChild(this.hitCircle_grap);
@@ -95,6 +107,7 @@ export class Enemy extends Container implements IHitbox {
         if(this.isDead){
             this.dead_timer += deltaSeconds;
             if(this.dead_timer >= 5){
+                this.spawn.substractCurrentEnemy(this);
                 this.isDestroyable = true;
             }
             return;
@@ -187,6 +200,7 @@ export class Enemy extends Container implements IHitbox {
     }
 
     public takeDamage(damage : number) : void{
+        this.attention_timer = 10;
         this.current_health -= damage;
         if(this.current_health <= 0){
             this.isDead = true;
@@ -217,7 +231,9 @@ export class Enemy extends Container implements IHitbox {
     
     protected timeControl(deltaSeconds : number){
         this.patrol_timer += deltaSeconds;
-        if(this.patrol_timer < 2){
+        this.attention_timer -= deltaSeconds;
+        if(this.attention_timer <= 0){this.attention_timer = 0;}
+        if(this.patrol_timer <  this.waiting_time){
             this.isWaiting = true;
         }else{
             this.isWaiting = false;
@@ -238,16 +254,15 @@ export class Enemy extends Container implements IHitbox {
         const distanceToPlayer = this.distanceTo(playerPos);
         this.isMovementAllowed = true;
         this.isAttackingAllowed = false;
-
-        if(distanceToPlayer <= this.detectionRadius){
-            this.isPlayerDetected = true
+        
+        if(distanceToPlayer <= this.detectionRadius || this.attention_timer > 0){
+            this.isPlayerDetected = true;
             if(distanceToPlayer < this.attackRadius){
                 this.isMovementAllowed = false;
                 this.isAttackingAllowed = true;
             }
             this.onPatrol = false;
-        }
-        if(distanceToPlayer > (this.detectionRadius)){
+        }else if(distanceToPlayer > (this.detectionRadius)){
             this.isPlayerDetected = false;
             this.onPatrol = true;
         }
@@ -265,11 +280,13 @@ export class Enemy extends Container implements IHitbox {
 
     protected movimiento(playerPos : Point, deltaTime : number) : void{
         if(this.isPlayerDetected){
+            this.speed = this.speed_chase;
             this.rotateTowards(playerPos);
             if(this.isMovementAllowed){
                 this.moveTowards(playerPos, deltaTime);
             }
-        }else if(this.onPatrol && this.patrol_timer > 2){
+        }else if(this.onPatrol && this.patrol_timer > this.waiting_time){
+            this.speed = this.speed_patrol;
             this.rotateTowards(this.currentPatrolPoint);
             this.moveTowards(this.currentPatrolPoint, deltaTime);
         }
@@ -312,5 +329,9 @@ export class Enemy extends Container implements IHitbox {
         const distance_y = objectPoint.y - globalEnemyPos.y;
         const distanceToPlayer = Math.sqrt((Math.pow(distance_x,2) + Math.pow(distance_y,2)))/2;
         return distanceToPlayer;
+    }
+
+    public setSpawn(spawn : EnemySpawn){
+        this.spawn = spawn;
     }
 }

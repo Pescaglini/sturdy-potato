@@ -1,10 +1,11 @@
 import { Point, Sprite } from "pixi.js";
 import { Enemy } from "./Enemy";
+import { EnemySpawn } from "./EnemySpawn";
 
 export class Goblin extends Enemy{
 
-    constructor(detectionRadius : number, startPosition : Point){
-        super(detectionRadius,startPosition);
+    constructor(startPosition : Point, spawn : EnemySpawn){
+        super(200,startPosition,spawn);
         this.ENEMY_TYPE = "GOBLIN";
         this.enemy_sprite = Sprite.from("goblin");
         this.enemy_sprite.anchor.set(0.5);
@@ -16,6 +17,7 @@ export class Goblin extends Enemy{
         this.current_health = this.max_health;
         this.attackRadius = 40;
         this.timeNeededToAttack = 1.5;
+        this.waiting_time = 5;
 
         this.addChild(this.enemy_sprite);
     }
