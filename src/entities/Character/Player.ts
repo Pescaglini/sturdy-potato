@@ -6,6 +6,7 @@ import { Weapon } from "../Weapons/Weapon";
 
 export class Player extends Container implements IHitbox {
     
+    
     private character : Sprite;
     private character_running : AnimatedSprite;
     private isRunning : Boolean;
@@ -36,7 +37,7 @@ export class Player extends Container implements IHitbox {
             Texture.from("archer_running_2"),
             Texture.from("archer_running_3"),
             Texture.from("archer_running_4")   
-        ], true
+            ], true
         );
         this.character_running.anchor.set(0.5);
         this.character_running.scale.set(1.5);
@@ -80,7 +81,7 @@ export class Player extends Container implements IHitbox {
         this.changeRunningAnimation();
         this.rotateTowardMouse(mousePos);
         this.playerMovement(deltaSeconds);
-    }
+    } 
 
     private setStateAnimations() : void{
         this.isRunning = false;
@@ -204,5 +205,15 @@ export class Player extends Container implements IHitbox {
         }
     }
 
-    
+    public getHealth() : number{
+        return this.current_health;
+    }
+
+    public getMaxHealth(): number {
+        return this.max_health;
+    }
+
+    public getDead() : Boolean{
+        return this.isDead;
+    }
 }

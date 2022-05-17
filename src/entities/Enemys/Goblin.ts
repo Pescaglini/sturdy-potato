@@ -18,6 +18,7 @@ export class Goblin extends Enemy{
         this.attackRadius = 40;
         this.timeNeededToAttack = 1.5;
         this.waiting_time = 5;
+        this.damage = 20;
 
         this.addChild(this.enemy_sprite);
     }

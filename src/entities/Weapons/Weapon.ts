@@ -30,5 +30,8 @@ export class Weapon extends Container {
         console.log(this.ammo_count)
     }
 
+    public getAmmoCount() : number {
+        return this.ammo_count;
+    }
 
 }

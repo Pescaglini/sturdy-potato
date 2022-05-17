@@ -12,7 +12,7 @@ export const assets = [
     {url: "./character/arrow_1.png", name: "arrow_1"},
 
     //Escenario
-    {url: "./decoration/background_1.png", name: "myBackground_1"},
+    {url: "./decoration/map1.png", name: "myBackground_1"},
     {url: "./decoration/tree_1.png", name: "tree_1"},
     
 
@@ -27,6 +27,8 @@ export const assets = [
     {url: "./utils/transparent_background.png", name: "interactive_background"},
 
     //UI
+    {url: "./ui/ui_elements/outBar.png", name: "outBar"},
+    {url: "./ui/ui_elements/redBar.png", name: "redBar"},
     {url: "./ui/ui_elements/brick_ui.jpg", name: "brick_ui"},
     {url: "./ui/ui_elements/paper_ui.png", name: "paper_ui"},
     {url: "./ui/ui_elements/torch_ui.png", name: "torch_ui"},

@@ -24,6 +24,7 @@ export class Enemy extends Container implements IHitbox {
     private speed : number;
     private speed_patrol : number;
     private speed_chase : number;
+    protected damage : number;
     protected max_health : number;
     protected current_health : number;
     private detectionRadius : number;
@@ -64,6 +65,7 @@ export class Enemy extends Container implements IHitbox {
         this.dead_timer = 0;
         this.attention_timer = 0;
         this.timeNeededToAttack = 3;
+        this.damage = 0;
 
         this.enemy_sprite = Sprite.from(Texture.from("default_enemy_texture"));
         this.enemy_dead_sprite = Sprite.from(Texture.from("default_enemy_texture"));
@@ -205,6 +207,10 @@ export class Enemy extends Container implements IHitbox {
         if(this.current_health <= 0){
             this.isDead = true;
         } 
+    }
+
+    public damageOutput() : number{
+        return this.damage;
     }
 
     public changeDeadAnimation() : void{

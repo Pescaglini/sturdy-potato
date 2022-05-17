@@ -11,8 +11,9 @@ import { Weapon } from "../entities/Weapons/Weapon";
 import { checkCollision_CC, checkCollision_RR, IHitbox } from "../utils/IHitbox";
 import { EnemySpawn } from "../entities/Enemys/EnemySpawn";
 import { Goblin } from "../entities/Enemys/Goblin";
+import { HUD } from "../ui/HUD";
 
-
+//TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
 
 export class GameScene extends Container implements IUpdateable{
 	
@@ -25,6 +26,7 @@ export class GameScene extends Container implements IUpdateable{
     private mousePos : any;
     private background : Sprite;
     private title : Text;
+    private hud : HUD;
 
     private interactive_background : InteractiveSpace;
     private character_projectiles :  Array<Projectile>;
@@ -52,10 +54,14 @@ export class GameScene extends Container implements IUpdateable{
 
         this.player = new Player();
 
-        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),500);
+        this.activeWeapon = this.player.getActiveWeapon();
+
+        this.hud = new HUD(this.player,this.activeWeapon);
+
+        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600);
+        this.enemySpawn.position.set(300,1500);
         this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),3);
 
-        this.activeWeapon = this.player.getActiveWeapon();
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
@@ -71,7 +77,8 @@ export class GameScene extends Container implements IUpdateable{
         this.pauseButton.scale.set(0.3);
         
         this.background = Sprite.from("myBackground_1");
-        this.background.scale.set(1.8);
+        this.background.scale.set(1);
+        this.background.position.set(-500,-500);
 
         this.title = new Text("Inserte texto aqui",{fontSize: 20, stroke: 0xFCFF00});
         this.title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse\nDisparo con raton Izq";
@@ -83,15 +90,16 @@ export class GameScene extends Container implements IUpdateable{
 
 
         //Adders
+        this.addChild(this.world);
         this.addChild(this.background);
         this.addChild(this.enemySpawn);
         this.addChild(this.player);
         this.addChild(this.tree);
         this.addChild(this.interactive_background);
-        this.addChild(this.title);
+        this.addChild(this.hud);
+        //this.addChild(this.title);
         this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
-        this.addChild(this.world);
         this.worldAdder();
     }
     
@@ -111,7 +119,7 @@ export class GameScene extends Container implements IUpdateable{
         this.playerCollisionUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
-        console.log(this.player_collision_objects.length);
+        this.hud.update();
     }
 
     private playerCollisionUpdate() : void{
@@ -143,7 +151,7 @@ export class GameScene extends Container implements IUpdateable{
                 switch (enemigo.getEnemyType()) {
                     case "GOBLIN":
                         if(enemigo.isEnemyAttacking()){
-                            console.log("Goblin: wasaaa,te pego");
+                            this.player.takeDamage(enemigo.damageOutput());
                         }       
                         break;
                     default:
@@ -200,23 +208,25 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     private activateWeapon() : void{
-        if(this.activeWeapon.hasAmmo()){
-            this.activeWeapon.substract_ammo(1);
-            const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
-            const aux_projectile = new Projectile(texture_ammo,this.player.getGlobalPosition(),this.mousePos);
-            this.character_projectiles.push(aux_projectile);
-            this.addChildAt(aux_projectile,1);
-            //this.world.addChild(aux_projectile);
-            
+        if(!this.player.getDead()){
+            if(this.activeWeapon.hasAmmo()){
+                this.activeWeapon.substract_ammo(1);
+                const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
+                const aux_projectile = new Projectile(texture_ammo,this.player.position,this.world.toLocal(this.mousePos));
+                this.character_projectiles.push(aux_projectile);
+                this.addChildAt(aux_projectile,5);
+                this.world.addChild(aux_projectile);
+                
+            }
         }
     }
 
     private worldAdder() : void{
+        this.world.addChild(this.background)
         this.world.addChild(this.enemySpawn);
         this.world.addChild(this.player);
         this.world.addChild(this.tree);
     }
-
 
    
 }
