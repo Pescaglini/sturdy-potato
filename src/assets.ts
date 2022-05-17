@@ -7,6 +7,8 @@ export const assets = [
     {url: "./character/archer_running_3.png", name: "archer_running_3"},
     {url: "./character/archer_running_4.png", name: "archer_running_4"},
     {url: "./character/archer_stand.png", name: "archer_stand"},
+    {url: "./character/archer_crippled.png", name: "archer_crippled"},
+    {url: "./character/archer_dead.png", name: "archer_dead"},
 
     //Weapons
     {url: "./character/arrow_1.png", name: "arrow_1"},

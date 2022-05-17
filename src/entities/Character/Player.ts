@@ -9,6 +9,9 @@ export class Player extends Container implements IHitbox {
     
     private character : Sprite;
     private character_running : AnimatedSprite;
+    private character_lowHealth : Sprite;
+    private character_dead : Sprite;
+    private sprites_array : Array<Container>;
     private isRunning : Boolean;
     private isDead : Boolean;
     private activeWeapon : Weapon;
@@ -29,9 +32,11 @@ export class Player extends Container implements IHitbox {
         this.isDead = false;
 
         this.position.set(WIDTH/2,HEIGHT/2);
+        this.sprites_array = new Array<Container>();
         this.character = Sprite.from("archer_stand");
-        this.character.anchor.set(0.5);
+        this.sprites_array.push(this.character);
         this.character.scale.set(1.5);
+        this.character.anchor.set(0.5);
         this.character_running = new AnimatedSprite([
             Texture.from("archer_running_1"),
             Texture.from("archer_running_2"),
@@ -39,10 +44,19 @@ export class Player extends Container implements IHitbox {
             Texture.from("archer_running_4")   
             ], true
         );
+        this.sprites_array.push(this.character_running);
         this.character_running.anchor.set(0.5);
         this.character_running.scale.set(1.5);
         this.character_running.play();
         this.character_running.animationSpeed = 0.2;
+        this.character_lowHealth = Sprite.from("archer_crippled");
+        this.sprites_array.push(this.character_lowHealth);
+        this.character_lowHealth.anchor.set(0.5);
+        this.character_lowHealth.scale.set(1.5);
+        this.character_dead = Sprite.from("archer_dead");
+        this.sprites_array.push(this.character_dead);
+        this.character_dead.anchor.set(0.5);
+        this.character_dead.scale.set(1.5);
 
         this.alpha_hitbox = 0;
 
@@ -76,9 +90,11 @@ export class Player extends Container implements IHitbox {
     }
 
     public update(_deltaFrame: number, deltaSeconds : number, mousePos : any) {
-        if(this.isDead){return;}
+        if(this.isDead){
+            this.changeAnimations();
+            return;}
         this.setStateAnimations();
-        this.changeRunningAnimation();
+        this.changeAnimations();
         this.rotateTowardMouse(mousePos);
         this.playerMovement(deltaSeconds);
     } 
@@ -193,16 +209,26 @@ export class Player extends Container implements IHitbox {
         const rot = (Math.atan2(dy, dx)) + 3.14/2;
         this.character.rotation = rot;
         this.character_running.rotation = rot;
+        this.character_lowHealth.rotation = rot; 
     }
 
-    private changeRunningAnimation(){
-        if(!this.isRunning){
-            this.addChild(this.character);
-            this.removeChild(this.character_running);
-        }else{
-            this.addChild(this.character_running);
-            this.removeChild(this.character);
+    private changeAnimations(){
+        for (let object of this.sprites_array){
+            this.removeChild(object);
         }
+        if(!this.isDead){
+            if(this.current_health <= this.max_health * 0.25){
+                this.addChild(this.character_lowHealth);
+            }else if(!this.isRunning){
+                this.addChild(this.character);
+            }else{
+                this.addChild(this.character_running);
+            }
+        }else{
+            this.addChild(this.character_dead);
+        }
+        
+        
     }
 
     public getHealth() : number{
