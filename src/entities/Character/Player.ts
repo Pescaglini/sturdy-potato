@@ -23,6 +23,7 @@ export class Player extends Container implements IHitbox {
     private movement : Point;
     private speed : number;
     private alpha_hitbox : number;
+    private last_position : Point;
 
     OBJECT_TYPE = "PLAYER";
 
@@ -32,6 +33,7 @@ export class Player extends Container implements IHitbox {
         this.isDead = false;
 
         this.position.set(WIDTH/2,HEIGHT/2);
+        this.last_position = new Point(this.position.x,this.position.y);
         this.sprites_array = new Array<Container>();
         this.character = Sprite.from("archer_stand");
         this.sprites_array.push(this.character);
@@ -92,7 +94,8 @@ export class Player extends Container implements IHitbox {
     public update(_deltaFrame: number, deltaSeconds : number, mousePos : any) {
         if(this.isDead){
             this.changeAnimations();
-            return;}
+            return;
+        }
         this.setStateAnimations();
         this.changeAnimations();
         this.rotateTowardMouse(mousePos);
@@ -116,23 +119,37 @@ export class Player extends Container implements IHitbox {
     }
 
     private playerMovement(deltaSeconds : number) : void{
+        this.last_position.set(this.position.x,this.position.y);
         //Accumulo el movimiento del personaje para saber cuanto tiene que moverse el mundo.
+        const direction_point = new Point(0,0);
         if(Keyboard.state.get("KeyA")){
-            this.position.x -= this.speed * deltaSeconds;
-            this.movement.x += this.speed * deltaSeconds;
-         }
-         if(Keyboard.state.get("KeyD")){
-             this.position.x += this.speed * deltaSeconds;
-             this.movement.x += -this.speed * deltaSeconds
-         }
-         if(Keyboard.state.get("KeyW")){
-             this.position.y -= this.speed * deltaSeconds;
-             this.movement.y += this.speed * deltaSeconds;
-         }
-         if(Keyboard.state.get("KeyS")){
-             this.position.y += this.speed * deltaSeconds;
-             this.movement.y += -this.speed * deltaSeconds;
-         }
+            direction_point.x = -1;
+        }
+        if(Keyboard.state.get("KeyD")){
+            direction_point.x = 1;
+        }
+        if(Keyboard.state.get("KeyW")){
+            direction_point.y = -1;
+        }
+        if(Keyboard.state.get("KeyS")){
+            direction_point.y = 1;
+        }
+        if(direction_point.x != 0 || direction_point.y != 0){
+            const rot = (Math.atan2(direction_point.y,direction_point.x)) + 3.14/2;
+            this.position.x += this.speed  * Math.cos(rot - 3.14/2) * deltaSeconds;
+            this.position.y += this.speed  * Math.sin(rot - 3.14/2) * deltaSeconds;
+            this.movement.x -= this.speed  * Math.cos(rot - 3.14/2) * deltaSeconds;
+            this.movement.y -= this.speed  * Math.sin(rot - 3.14/2) * deltaSeconds;
+        }
+        
+    }
+
+    public returnToLastPosition() : void{
+        const difx = this.position.x - this.last_position.x;
+        const dify = this.position.y - this.last_position.y;
+        this.position.set(this.last_position.x,this.last_position.y);
+        this.movement.x += difx;  
+        this.movement.y += dify;
     }
 
     public returnMovement() : Point{
@@ -191,16 +208,17 @@ export class Player extends Container implements IHitbox {
     public impactObjectAdder(obj : any) : void{
         this.addChild(obj);
     }
+
     public isHitteable(): Boolean {
         if(!this.isDead){
             return true;
         }
         return false;
     }
+
     public getActiveWeapon() : Weapon{
         return this.activeWeapon;
     }
-
 
     private rotateTowardMouse(mouse : any) : void {
         const globalCharacterPos = this.toGlobal(this.character.position);

@@ -1,4 +1,4 @@
-import { Container, IDestroyOptions, Sprite, Text, Texture } from "pixi.js";
+import { Container, IDestroyOptions, Sprite, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
@@ -12,6 +12,7 @@ import { checkCollision_CC, checkCollision_RR, IHitbox } from "../utils/IHitbox"
 import { EnemySpawn } from "../entities/Enemys/EnemySpawn";
 import { Goblin } from "../entities/Enemys/Goblin";
 import { HUD } from "../ui/HUD";
+import { Maps } from "../escenary/Maps";
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
 
@@ -25,18 +26,18 @@ export class GameScene extends Container implements IUpdateable{
     private mousePointer : Sprite;
     private mousePos : any;
     private background : Sprite;
-    private title : Text;
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
     private character_projectiles :  Array<Projectile>;
-    private player_collision_objects :  Array<IHitbox>;
+    private enemy_hitbox_array :  Array<IHitbox>;
     private enemys_array :  Array<Enemy>;
 
     private tree : FarmeableObject;
     private enemySpawn : EnemySpawn;
 
     private world : Container;
+    private worldMap : Maps;
     
 
     constructor(){
@@ -48,7 +49,7 @@ export class GameScene extends Container implements IUpdateable{
 
         this.character_projectiles = new Array<Projectile>();
 
-        this.player_collision_objects = new Array<IHitbox>();
+        this.enemy_hitbox_array = new Array<IHitbox>();
 
         this.enemys_array = new Array<Enemy>();
 
@@ -57,6 +58,8 @@ export class GameScene extends Container implements IUpdateable{
         this.activeWeapon = this.player.getActiveWeapon();
 
         this.hud = new HUD(this.player,this.activeWeapon);
+
+        this.worldMap = new Maps();
 
         this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600);
         this.enemySpawn.position.set(300,1500);
@@ -78,15 +81,12 @@ export class GameScene extends Container implements IUpdateable{
         
         this.background = Sprite.from("myBackground_1");
         this.background.scale.set(1);
-        this.background.position.set(-500,-500);
 
-        this.title = new Text("Inserte texto aqui",{fontSize: 20, stroke: 0xFCFF00});
-        this.title.text = "Idea: Top Down Survival por Oleadas Generico de Fantasia \nControles\nWASD movimiento\nRotacion a Mouse\nDisparo con raton Izq";
-        this.title.position.set(0,0);
-        
         this.gui_pause = new Gui_pause();
         this.gui_pause.position.set(600,150);
         this.gui_pause.on(Gui_pause.CLOSE_EVENT,()=>this.removeChild(this.gui_pause))
+
+        
 
 
         //Adders
@@ -97,7 +97,6 @@ export class GameScene extends Container implements IUpdateable{
         this.addChild(this.tree);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
-        //this.addChild(this.title);
         this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
         this.worldAdder();
@@ -114,7 +113,7 @@ export class GameScene extends Container implements IUpdateable{
         const dt = deltaTime / 1000;
         this.player.update(deltaFrame, dt, this.mousePos);
         this.projectileUpdates(dt,deltaFrame);
-        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.player_collision_objects,this.world);
+        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.world);
         this.enemyUpdates(dt,deltaFrame);
         this.playerCollisionUpdate();
         this.setMouseSpritePosition();
@@ -123,11 +122,16 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     private playerCollisionUpdate() : void{
-        for (let object of this.player_collision_objects) {
+        //Colisiones con enemigos
+        for (let object of this.enemy_hitbox_array) {
             const overlap = checkCollision_RR(this.player,object);
             if(overlap != null){
-                //this.player.CollisionDetected(overlap,1);
+                this.player.CollisionDetected(overlap,1);
             }
+        }
+        //Colisiones con mundo tile-management
+        if(!this.worldMap.isInAvaibleSquare(this.player.position)){
+            this.player.returnToLastPosition();
         }
     }
 
@@ -142,9 +146,9 @@ export class GameScene extends Container implements IUpdateable{
         for (let index = 0; index < this.enemys_array.length; index++) {
             const enemigo = this.enemys_array[index];
             enemigo.update(deltaSeconds, deltaFrame,this.player.position);
-            if(enemigo.isEnemyDestroyable()){        
+            if(enemigo.isEnemyDestroyable()){    
                 this.enemys_array.splice(index,1);
-                //enemigo.destroy({children : true});
+                this.enemy_hitbox_array.splice(index,1);
                 enemigo.destroy(); 
             }
             if(!enemigo.isEnemyDead()){        
@@ -169,7 +173,7 @@ export class GameScene extends Container implements IUpdateable{
             projectile.update(dt,deltaFrame);
             //TENGO QUE IMPLEMENTAR UN QUADTREE O ME VA A REVENTAR CUANDO TENGA MUCHOS ENEMIGOS :) O(n^n)
             if(!projectile.isCollisionHappened()){
-                for (let object of this.player_collision_objects){
+                for (let object of this.enemy_hitbox_array){
                     if(object.isHitteable()){
                         const overlap = checkCollision_CC(projectile,object);
                         if(overlap != null){

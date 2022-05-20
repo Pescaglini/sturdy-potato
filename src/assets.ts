@@ -14,8 +14,11 @@ export const assets = [
     {url: "./character/arrow_1.png", name: "arrow_1"},
 
     //Escenario
-    {url: "./decoration/map1.png", name: "myBackground_1"},
     {url: "./decoration/tree_1.png", name: "tree_1"},
+
+    //Maps
+    {url: "./maps/map1.png", name: "myBackground_1"},
+    {url: "./maps/map1_JS.json", name: "map1_js"},
     
 
     //Enemigos
