@@ -14,6 +14,8 @@ export class Player extends Container implements IHitbox {
     private sprites_array : Array<Container>;
     private isRunning : Boolean;
     private isDead : Boolean;
+    private isDashing : Boolean;
+    private canDash : Boolean;
     private activeWeapon : Weapon;
     private hitBox : Graphics;
     private hitCircle_grap : Graphics;
@@ -22,6 +24,11 @@ export class Player extends Container implements IHitbox {
     private current_health;
     private movement : Point;
     private speed : number;
+    private dashSpeed : number;
+    private duration_dashTime : number;
+    private current_dashTime : number;
+    private cooldown_dashTime : number;
+    private walkingSpeed : number;
     private alpha_hitbox : number;
     private last_position : Point;
 
@@ -76,11 +83,18 @@ export class Player extends Container implements IHitbox {
         this.max_health = 100;
         this.current_health = this.max_health;
         this.movement = new Point(0,0);
-        this.speed = 300;
+        this.walkingSpeed = 300;
+        this.speed = this.walkingSpeed;
+        this.dashSpeed = 1800;
+        this.duration_dashTime = 0.1;
+        this.current_dashTime = 0;
+        this.cooldown_dashTime = 1;
 
         this.activeWeapon = new Weapon(Texture.from("arrow_1"), 30);
 
         this.isRunning = false;
+        this.isDashing = false;
+        this.canDash = true;
 
         this.addChild(this.hitBox);
         this.addChild(this.hitCircle_grap);
@@ -96,11 +110,29 @@ export class Player extends Container implements IHitbox {
             this.changeAnimations();
             return;
         }
+        this.timers(deltaSeconds);
         this.setStateAnimations();
         this.changeAnimations();
         this.rotateTowardMouse(mousePos);
         this.playerMovement(deltaSeconds);
     } 
+
+    private timers(deltaSeconds : number){
+        if(this.isDashing){
+            this.current_dashTime += deltaSeconds;
+        }
+        if(this.current_dashTime > this.duration_dashTime){
+            this.current_dashTime = 0;
+            this.isDashing = false;
+        }
+        if( this.cooldown_dashTime >= 1){
+            this.canDash = true;
+            this.cooldown_dashTime = 0;
+        }
+        if(!this.canDash){
+            this.cooldown_dashTime += deltaSeconds;
+        }
+    }
 
     private setStateAnimations() : void{
         this.isRunning = false;
@@ -116,10 +148,17 @@ export class Player extends Container implements IHitbox {
         if(Keyboard.state.get("KeyS")){
             this.isRunning = true;
         }
+        if(Keyboard.state.get("Space")){
+            if(this.canDash){
+                this.isDashing = true;
+                this.canDash = false;
+            }
+        }
     }
 
     private playerMovement(deltaSeconds : number) : void{
         this.last_position.set(this.position.x,this.position.y);
+        this.speed = this.walkingSpeed;
         //Accumulo el movimiento del personaje para saber cuanto tiene que moverse el mundo.
         const direction_point = new Point(0,0);
         if(Keyboard.state.get("KeyA")){
@@ -134,6 +173,9 @@ export class Player extends Container implements IHitbox {
         if(Keyboard.state.get("KeyS")){
             direction_point.y = 1;
         }
+        if(this.isDashing == true){
+            this.speed = this.dashSpeed;
+        }
         if(direction_point.x != 0 || direction_point.y != 0){
             const rot = (Math.atan2(direction_point.y,direction_point.x)) + 3.14/2;
             this.position.x += this.speed  * Math.cos(rot - 3.14/2) * deltaSeconds;
@@ -143,6 +185,7 @@ export class Player extends Container implements IHitbox {
         }
         
     }
+
 
     public returnToLastPosition() : void{
         const difx = this.position.x - this.last_position.x;

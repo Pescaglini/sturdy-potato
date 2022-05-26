@@ -108,7 +108,7 @@ export class Enemy extends Container implements IHitbox {
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
         if(this.isDead){
             this.dead_timer += deltaSeconds;
-            if(this.dead_timer >= 5){
+            if(this.dead_timer >= 10){
                 this.spawn.substractCurrentEnemy(this);
                 this.isDestroyable = true;
             }
