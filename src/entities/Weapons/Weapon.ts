@@ -27,7 +27,6 @@ export class Weapon extends Container {
 
     public substract_ammo(cost : number) : void{
         this.ammo_count = this.ammo_count - cost;
-        console.log(this.ammo_count)
     }
 
     public getAmmoCount() : number {

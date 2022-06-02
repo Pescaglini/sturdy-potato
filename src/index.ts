@@ -1,10 +1,12 @@
 import { Application, Loader, Ticker } from 'pixi.js'
+import { Group } from 'tweedle.js';
 import { assets } from './assets';
 import { GameScene } from './scenes/GameScene';
 import { Keyboard } from './utils/Keyboard';
 
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
+export let RIGHTCLICK = false;
 
 const app = new Application({
 	view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
@@ -37,6 +39,12 @@ window.addEventListener("resize", ()=>{
 	app.view.style.marginBottom = marginVertical.toString() + "px";
 
 });
+
+window.addEventListener('contextmenu', function (e) {
+	RIGHTCLICK = true;
+	e.preventDefault();}, 
+	false); 
+
 window.dispatchEvent(new Event("resize"));
 
 Loader.shared.add(assets);
@@ -45,6 +53,7 @@ Loader.shared.onComplete.add(()=>{
 	const myScene = new GameScene();
 	app.stage.addChild(myScene);
 	Ticker.shared.add(function (deltaFrame){
+		Group.shared.update();
 		myScene.mousePosition(app.renderer.plugins.interaction.mouse.global);
 		myScene.update(Ticker.shared.deltaMS, deltaFrame);
 	})

@@ -108,6 +108,7 @@ export class GameScene extends Container implements IUpdateable{
 
     public update(deltaTime: number, deltaFrame: number): void {
         if(this.pauseState){
+            this.setMouseSpritePosition();
             return;
         }
         const dt = deltaTime / 1000;
@@ -213,6 +214,7 @@ export class GameScene extends Container implements IUpdateable{
 
     private activateWeapon() : void{
         if(!this.player.getDead()){
+            //if(this)
             if(this.activeWeapon.hasAmmo()){
                 this.activeWeapon.substract_ammo(1);
                 const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();

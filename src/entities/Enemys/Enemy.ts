@@ -1,4 +1,5 @@
-import { Circle, Container, Graphics, Point, Rectangle, Sprite, Texture } from "pixi.js";
+import { Circle, Container, Graphics, Point, Rectangle, Sprite, Text, Texture } from "pixi.js";
+import { Interpolation, Tween } from "tweedle.js";
 import { IHitbox } from "../../utils/IHitbox";
 import { EnemySpawn } from "./EnemySpawn";
 
@@ -6,9 +7,12 @@ import { EnemySpawn } from "./EnemySpawn";
 export class Enemy extends Container implements IHitbox {
     protected enemy_sprite : Sprite;
     protected enemy_dead_sprite : Sprite;
+    protected enemy_damage_text : Text;
+
     private hitBox : Graphics;
     private hitCircle_grap: Graphics;
     private hitCircle: Circle;
+
     private patrol_points :  Array<Point>;
     private currentPatrolPoint : Point;
     private currentPatrolIndex : number;
@@ -16,23 +20,26 @@ export class Enemy extends Container implements IHitbox {
     private isPlayerDetected : Boolean;
     private isMovementAllowed : Boolean;
     private isWaiting : Boolean;
+    private isTakingDamage : Boolean;
     private isAttackingAllowed : Boolean;
     private isAttacking : Boolean;
     private isDead : Boolean;
     private isDestroyable : Boolean;
     private debuggin : Boolean;
-    private speed : number;
-    private speed_patrol : number;
-    private speed_chase : number;
+
+    protected speed : number;
+    protected speed_patrol : number;
+    protected speed_chase : number;
     protected damage : number;
     protected max_health : number;
     protected current_health : number;
-    private detectionRadius : number;
+    protected detectionRadius : number;
     private patrol_timer : number;
     protected waiting_time : number;
     protected attackRadius : number;
     private attack_timer : number;
     private dead_timer : number;
+    private taking_damage_timer : number;
     protected timeNeededToAttack : number;
     private attention_timer : number;
     protected spawn : EnemySpawn;
@@ -43,7 +50,7 @@ export class Enemy extends Container implements IHitbox {
     OBJECT_TYPE = "ENEMY";
     protected ENEMY_TYPE = "GOBLIN";
 
-    constructor(detectionRadius : number, startPosition : Point, spawn : EnemySpawn){
+    constructor(startPosition : Point, spawn : EnemySpawn){
         super();
         this.onPatrol = false;
         this.debuggin = false;
@@ -54,21 +61,26 @@ export class Enemy extends Container implements IHitbox {
         this.isAttacking = false;
         this.isDead = false;
         this.isDestroyable = false;
-        this.detectionRadius = detectionRadius;
+        this.isTakingDamage = false;
+       
         this.max_health = 100;
         this.current_health = this.max_health;
 
         this.waiting_time = 0;
         this.patrol_timer = 0;
         this.attack_timer = 0;
+        this.detectionRadius = 0;
         this.attackRadius = 0;
         this.dead_timer = 0;
         this.attention_timer = 0;
+        this.taking_damage_timer = 1;
         this.timeNeededToAttack = 3;
         this.damage = 0;
 
         this.enemy_sprite = Sprite.from(Texture.from("default_enemy_texture"));
         this.enemy_dead_sprite = Sprite.from(Texture.from("default_enemy_texture"));
+        this.enemy_damage_text = new Text("0", {fontSize: 15,fill: "white", stroke: 0x000000, strokeThickness: 5});
+        
 
         this.hitBox = new Graphics();
         this.hitBox.beginFill(0xFFFF00,0.0);
@@ -90,15 +102,16 @@ export class Enemy extends Container implements IHitbox {
         this.currentPatrolPoint = startPosition;
 
         this.spawn = spawn;
-        
+
         this.addChild(this.hitBox);
         this.addChild(this.hitCircle_grap);
+        
 
         this.patrolRouteDebug = new Graphics();
         if(this.debuggin){
             const detectionCircle = new Graphics();
             detectionCircle.beginFill(0x000000,0.1);
-            detectionCircle.drawCircle(this.enemy_sprite.position.x,this.enemy_sprite.position.y,detectionRadius);
+            detectionCircle.drawCircle(this.enemy_sprite.position.x,this.enemy_sprite.position.y,this.detectionRadius);
             detectionCircle.endFill();
             this.addChild(detectionCircle);
             this.enemy_sprite.addChild(detectionCircle);
@@ -107,8 +120,10 @@ export class Enemy extends Container implements IHitbox {
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
         if(this.isDead){
+            this.enemy_damage_text.alpha = 0;
+            new Tween(this.enemy_dead_sprite).to({alpha : 0},3000).interpolation(Interpolation.Color.RGB).start();
             this.dead_timer += deltaSeconds;
-            if(this.dead_timer >= 10){
+            if(this.dead_timer >= 5){
                 this.spawn.substractCurrentEnemy(this);
                 this.isDestroyable = true;
             }
@@ -119,6 +134,7 @@ export class Enemy extends Container implements IHitbox {
         this.timeControl(deltaSeconds);
         this.detections(globalPlayerPos);
         this.movimiento(globalPlayerPos, deltaSeconds);
+        this.takingDamageControl();
     }
 
     public getHitbox() : Rectangle{
@@ -204,9 +220,23 @@ export class Enemy extends Container implements IHitbox {
     public takeDamage(damage : number) : void{
         this.attention_timer = 10;
         this.current_health -= damage;
+        this.enemy_damage_text.text = String(damage);
+        this.enemy_damage_text.position.set(0,-30);
+        new Tween(this.enemy_damage_text).to({y : -50},500).start();
+        this.taking_damage_timer = 0;
+        this.enemy_sprite.tint = 0xff0000;
+        new Tween(this.enemy_sprite).to({tint:[0xffffff]},1000).interpolation(Interpolation.Color.RGB).start();
         if(this.current_health <= 0){
             this.isDead = true;
         } 
+    }
+
+    private takingDamageControl() : void{
+        if(this.isTakingDamage){
+            this.enemy_damage_text.alpha = 1;
+        }else{
+            this.enemy_damage_text.alpha = 0;
+        }
     }
 
     public damageOutput() : number{
@@ -252,6 +282,13 @@ export class Enemy extends Container implements IHitbox {
         }else{
             this.attack_timer = 0;
             this.isAttacking = false;
+        }
+        if(this.taking_damage_timer < 1){
+            this.isTakingDamage = true;
+            this.taking_damage_timer += deltaSeconds;
+        }else{
+            this.taking_damage_timer = 1;
+            this.isTakingDamage = false;
         }
         
     }

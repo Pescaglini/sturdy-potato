@@ -1,4 +1,4 @@
-import { Container, Sprite, Texture } from "pixi.js"
+import { Container, InteractionEvent, Sprite, Texture } from "pixi.js"
 
 export class InteractiveSpace extends Container{
     private space : Sprite;
@@ -14,10 +14,9 @@ export class InteractiveSpace extends Container{
     }
     private onMouseUp(): void {
         
-        //this.callback();
     }
-    private onMouseDown(): void {
-       
+    private onMouseDown(_e : InteractionEvent): void {
+        
         this.callback();
     }
     

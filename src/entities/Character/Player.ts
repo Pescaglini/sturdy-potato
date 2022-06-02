@@ -1,4 +1,5 @@
 import { AnimatedSprite, Circle, Container, Graphics, IDestroyOptions, Point, Rectangle, Sprite, Texture } from "pixi.js";
+import { Interpolation, Tween } from "tweedle.js";
 import { HEIGHT, WIDTH } from "../..";
 import { IHitbox } from "../../utils/IHitbox";
 import { Keyboard } from "../../utils/Keyboard";
@@ -242,6 +243,8 @@ export class Player extends Container implements IHitbox {
     }
 
     public takeDamage(damage : number) : void{
+        this.character.tint = 0xff0000;
+        new Tween(this.character).to({tint:[0xffffff]},1000).interpolation(Interpolation.Color.RGB).start();
         this.current_health -= damage;
         if(this.current_health <= 0){
             this.isDead = true;
