@@ -25,22 +25,18 @@ export class Button extends Container{
         this.spr.on("mouseout",this.onMouseOut,this);
     }
     private onMouseDown(): void {
-        console.log("mouse down");
         this.spr.texture = this.down;
     }
     private onMouseUp(): void {
-        console.log("mouse up");
         this.callback();
         this.spr.texture = this.over;
     }
 
     private onMouseOver(): void {
-        console.log("mouse Over");
         this.spr.texture = this.over;
         
     }
     private onMouseOut(): void {
-        console.log("mouse Out");
         this.spr.texture = this.def;
         
     }

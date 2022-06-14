@@ -1,4 +1,6 @@
-import { Container, NineSlicePlane, Texture, Text, AnimatedSprite } from "pixi.js";
+import { Emitter, upgradeConfig } from "@pixi/particle-emitter";
+import { Container, NineSlicePlane, Texture, Text, AnimatedSprite, ParticleContainer } from "pixi.js";
+import * as fireParticles from "../particles/fireParticles.json"
 import { Button } from "./Button";
 
 export class Gui_pause extends Container{
@@ -12,9 +14,22 @@ export class Gui_pause extends Container{
 
     constructor(){
         super();
-
+        
         //this.pauseState = pauseState;
+        let container = new ParticleContainer;
+        this.addChild(container);
+        let emitter = new Emitter(container,upgradeConfig(fireParticles,Texture.from("fireParticle")))
+        emitter.emit = false;
 
+        var elapsed = Date.now();
+        var update = function(){
+            requestAnimationFrame(update);
+            var now = Date.now();
+            emitter.update((now - elapsed) * 0.001);
+            elapsed = now;
+        };
+
+    
         const wood_ui = new NineSlicePlane(
             Texture.from("wood_gi"),
             35,35,35,35
@@ -110,7 +125,9 @@ export class Gui_pause extends Container{
         this.addChild(this.buttonOptions);
         this.addChild(this.buttonMainMenu);
         
+        update();
     }
+
     private OnButtonClick() : void{
         
     }

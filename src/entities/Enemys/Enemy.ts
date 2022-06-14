@@ -301,8 +301,10 @@ export class Enemy extends Container implements IHitbox {
         if(distanceToPlayer <= this.detectionRadius || this.attention_timer > 0){
             this.isPlayerDetected = true;
             if(distanceToPlayer < this.attackRadius){
-                this.isMovementAllowed = false;
                 this.isAttackingAllowed = true;
+            }
+            if(distanceToPlayer < this.enemy_sprite.width/2){
+                this.isMovementAllowed = false;
             }
             this.onPatrol = false;
         }else if(distanceToPlayer > (this.detectionRadius)){

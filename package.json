@@ -7,6 +7,8 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@pixi/particle-emitter": "^5.0.7",
+    "pixi": "^0.3.1",
     "pixi.js": "^6.2.2",
     "tweedle.js": "^2.0.0"
   },

@@ -119,6 +119,7 @@ export class GameScene extends Container implements IUpdateable{
         this.playerCollisionUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
+        this.setWorldChildsIndexes();
         this.hud.update();
     }
 
@@ -126,7 +127,7 @@ export class GameScene extends Container implements IUpdateable{
         //Colisiones con enemigos
         for (let object of this.enemy_hitbox_array) {
             const overlap = checkCollision_RR(this.player,object);
-            if(overlap != null){
+            if(overlap != null && object.isHitteable()){
                 this.player.CollisionDetected(overlap,1);
             }
         }
@@ -214,7 +215,6 @@ export class GameScene extends Container implements IUpdateable{
 
     private activateWeapon() : void{
         if(!this.player.getDead()){
-            //if(this)
             if(this.activeWeapon.hasAmmo()){
                 this.activeWeapon.substract_ammo(1);
                 const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
@@ -232,6 +232,11 @@ export class GameScene extends Container implements IUpdateable{
         this.world.addChild(this.enemySpawn);
         this.world.addChild(this.player);
         this.world.addChild(this.tree);
+    }
+
+    private setWorldChildsIndexes(): void{
+        //console.log(this.world.getChildIndex());
+
     }
 
    

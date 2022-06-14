@@ -39,7 +39,7 @@ export class Projectile extends Container implements IHitbox {
         this.projectile_sprite.anchor.set(0.5);
         this.position.set(position.x,position.y);
         this.damage = 30;
-        this.speed = 1300;
+        this.speed = 1700;
         this.flying_time = 0;
         this.must_destroy = false;
         this.rot = this.calculateRotationTo(mouse_position);
@@ -80,7 +80,7 @@ export class Projectile extends Container implements IHitbox {
 
     public update(deltaSeconds: number, _deltaFrame : number) : void{
         this.flying_time += deltaSeconds;
-        if(this.flying_time < 1){
+        if(this.flying_time < 0.5){
             this.movimiento(deltaSeconds);
         }else if(this.flying_time > 3){
             this.must_destroy = true;
