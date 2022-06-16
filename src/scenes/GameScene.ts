@@ -6,13 +6,13 @@ import { Button } from "../ui/Button";
 import { Enemy } from "../entities/Enemys/Enemy";
 import { Projectile } from "../entities/Weapons/Projectile";
 import { InteractiveSpace } from "../utils/InteractiveSpace";
-import { FarmeableObject } from "../escenary/FarmeableObject";
 import { Weapon } from "../entities/Weapons/Weapon";
 import { checkCollision_CC, checkCollision_RR, IHitbox } from "../utils/IHitbox";
 import { EnemySpawn } from "../entities/Enemys/EnemySpawn";
 import { Goblin } from "../entities/Enemys/Goblin";
 import { HUD } from "../ui/HUD";
 import { Maps } from "../escenary/Maps";
+import { Tree } from "../escenary/Tree";
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
 
@@ -32,11 +32,13 @@ export class GameScene extends Container implements IUpdateable{
     private character_projectiles :  Array<Projectile>;
     private enemy_hitbox_array :  Array<IHitbox>;
     private enemys_array :  Array<Enemy>;
+    private farmeableObject_array :  Array<Tree>;
 
-    private tree : FarmeableObject;
+   
     private enemySpawn : EnemySpawn;
 
     private world : Container;
+    private worldLayers : (Container)[]
     private worldMap : Maps;
     
 
@@ -44,6 +46,10 @@ export class GameScene extends Container implements IUpdateable{
         super();
 
         this.world = new Container();
+        this.worldLayers = [];
+        for (let index = 0; index < 5; index++) {
+            this.worldLayers.push(new Container());
+        }
 
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
@@ -52,6 +58,8 @@ export class GameScene extends Container implements IUpdateable{
         this.enemy_hitbox_array = new Array<IHitbox>();
 
         this.enemys_array = new Array<Enemy>();
+
+        this.farmeableObject_array = new Array<Tree>();
 
         this.player = new Player();
 
@@ -63,12 +71,13 @@ export class GameScene extends Container implements IUpdateable{
 
         this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600);
         this.enemySpawn.position.set(300,1500);
-        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),3);
-
+        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),50);
+        
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
-        this.tree = new FarmeableObject(Texture.from("tree_1"),2,0.75);
+        const tree = new Tree(Texture.from("treeLeaves"),0.75);
+        this.farmeableObject_array.push(tree);
 
         this.pauseState = false;
         
@@ -94,12 +103,19 @@ export class GameScene extends Container implements IUpdateable{
         this.addChild(this.background);
         this.addChild(this.enemySpawn);
         this.addChild(this.player);
-        this.addChild(this.tree);
+        this.addChild(tree);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
-        this.worldAdder();
+        
+        this.world.addChild(this.background)
+        this.world.addChild(this.enemySpawn);
+        this.world.addChild(this.player);
+        this.world.addChild(tree);
+
+        this.world.scale.set(0.5);
+        this.player.position.set(2000,300);
     }
     
     public override destroy(options?: boolean | IDestroyOptions): void {
@@ -107,6 +123,7 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     public update(deltaTime: number, deltaFrame: number): void {
+        console.log((deltaFrame*60).toFixed(0));
         if(this.pauseState){
             this.setMouseSpritePosition();
             return;
@@ -128,6 +145,13 @@ export class GameScene extends Container implements IUpdateable{
         for (let object of this.enemy_hitbox_array) {
             const overlap = checkCollision_RR(this.player,object);
             if(overlap != null && object.isHitteable()){
+                this.player.CollisionDetected(overlap,1);
+            }
+        }
+        //Colisiones con FarmeableObjects
+        for (let object of this.farmeableObject_array) {
+            const overlap = checkCollision_RR(this.player,object);
+            if(overlap != null){
                 this.player.CollisionDetected(overlap,1);
             }
         }
@@ -227,15 +251,8 @@ export class GameScene extends Container implements IUpdateable{
         }
     }
 
-    private worldAdder() : void{
-        this.world.addChild(this.background)
-        this.world.addChild(this.enemySpawn);
-        this.world.addChild(this.player);
-        this.world.addChild(this.tree);
-    }
-
     private setWorldChildsIndexes(): void{
-        //console.log(this.world.getChildIndex());
+        
 
     }
 

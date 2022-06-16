@@ -14,7 +14,8 @@ export const assets = [
     {url: "./character/arrow_1.png", name: "arrow_1"},
 
     //Escenario
-    {url: "./decoration/tree_1.png", name: "tree_1"},
+    {url: "./decoration/treeLeaves.png", name: "treeLeaves"},
+    {url: "./decoration/treeLogs.png", name: "treeLogs"},
 
     //Maps
     {url: "./maps/map1.png", name: "myBackground_1"},

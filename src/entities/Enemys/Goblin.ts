@@ -3,7 +3,6 @@ import { Enemy } from "./Enemy";
 import { EnemySpawn } from "./EnemySpawn";
 
 export class Goblin extends Enemy{
-
     constructor(startPosition : Point, spawn : EnemySpawn){
         super(startPosition,spawn);
         this.ENEMY_TYPE = "GOBLIN";

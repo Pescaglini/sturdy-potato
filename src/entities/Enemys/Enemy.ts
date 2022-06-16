@@ -16,16 +16,16 @@ export class Enemy extends Container implements IHitbox {
     private patrol_points :  Array<Point>;
     private currentPatrolPoint : Point;
     private currentPatrolIndex : number;
-    private onPatrol : Boolean;
-    private isPlayerDetected : Boolean;
-    private isMovementAllowed : Boolean;
-    private isWaiting : Boolean;
-    private isTakingDamage : Boolean;
-    private isAttackingAllowed : Boolean;
-    private isAttacking : Boolean;
-    private isDead : Boolean;
-    private isDestroyable : Boolean;
-    private debuggin : Boolean;
+    private onPatrol : boolean;
+    private playerDetected : boolean;
+    private movementAllowed : boolean;
+    private waiting : boolean;
+    private takingDamage : boolean;
+    private attackingAllowed : boolean;
+    private attacking : boolean;
+    private dead : boolean;
+    private destroyable : boolean;
+    private debuggin : boolean;
 
     protected speed : number;
     protected speed_patrol : number;
@@ -48,20 +48,20 @@ export class Enemy extends Container implements IHitbox {
     private patrolRouteDebug : Graphics;
 
     OBJECT_TYPE = "ENEMY";
-    protected ENEMY_TYPE = "GOBLIN";
+    protected ENEMY_TYPE = "";
 
     constructor(startPosition : Point, spawn : EnemySpawn){
         super();
         this.onPatrol = false;
         this.debuggin = false;
-        this.isPlayerDetected = false;
-        this.isWaiting = false;
-        this.isMovementAllowed = true;
-        this.isAttackingAllowed = false;
-        this.isAttacking = false;
-        this.isDead = false;
-        this.isDestroyable = false;
-        this.isTakingDamage = false;
+        this.playerDetected = false;
+        this.waiting = false;
+        this.movementAllowed = true;
+        this.attackingAllowed = false;
+        this.attacking = false;
+        this.dead = false;
+        this.destroyable = false;
+        this.takingDamage = false;
        
         this.max_health = 100;
         this.current_health = this.max_health;
@@ -119,13 +119,13 @@ export class Enemy extends Container implements IHitbox {
     }
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
-        if(this.isDead){
+        if(this.dead){
             this.enemy_damage_text.alpha = 0;
             new Tween(this.enemy_dead_sprite).to({alpha : 0},3000).interpolation(Interpolation.Color.RGB).start();
             this.dead_timer += deltaSeconds;
             if(this.dead_timer >= 5){
                 this.spawn.substractCurrentEnemy(this);
-                this.isDestroyable = true;
+                this.destroyable = true;
             }
             return;
         }
@@ -161,19 +161,19 @@ export class Enemy extends Container implements IHitbox {
         this.addChildAt(obj,0);
     }
 
-    public isHitteable(): Boolean {
-        if(!this.isDead){
+    public isHitteable(): boolean {
+        if(!this.dead){
             return true;
         }
         return false;
     }
 
-    public isEnemyDead() : Boolean{
-        return this.isDead;
+    public isEnemyDead() : boolean{
+        return this.dead;
     }
 
-    public isEnemyDestroyable() : Boolean{
-        return this.isDestroyable;
+    public isEnemyDestroyable() : boolean{
+        return this.destroyable;
     }
 
     public createPatrolRoute(radius : number, _extra = 0) : void{
@@ -227,12 +227,12 @@ export class Enemy extends Container implements IHitbox {
         this.enemy_sprite.tint = 0xff0000;
         new Tween(this.enemy_sprite).to({tint:[0xffffff]},1000).interpolation(Interpolation.Color.RGB).start();
         if(this.current_health <= 0){
-            this.isDead = true;
+            this.dead = true;
         } 
     }
 
     private takingDamageControl() : void{
-        if(this.isTakingDamage){
+        if(this.takingDamage){
             this.enemy_damage_text.alpha = 1;
         }else{
             this.enemy_damage_text.alpha = 0;
@@ -247,10 +247,10 @@ export class Enemy extends Container implements IHitbox {
         throw new Error("Implementa el cambio de Sprite de muerte gato");
     }
 
-    public isEnemyAttacking() : Boolean{
-        const attack = this.isAttacking;
-        if(this.isAttacking){
-            this.isAttackingAllowed = false;
+    public isEnemyAttacking() : boolean{
+        const attack = this.attacking;
+        if(this.attacking){
+            this.attackingAllowed = false;
         }
         return attack;
     }
@@ -270,52 +270,52 @@ export class Enemy extends Container implements IHitbox {
         this.attention_timer -= deltaSeconds;
         if(this.attention_timer <= 0){this.attention_timer = 0;}
         if(this.patrol_timer <  this.waiting_time){
-            this.isWaiting = true;
+            this.waiting = true;
         }else{
-            this.isWaiting = false;
+            this.waiting = false;
         }
-        if(this.isAttackingAllowed){
+        if(this.attackingAllowed){
             this.attack_timer += deltaSeconds;
             if(this.attack_timer >= this.timeNeededToAttack){
-                this.isAttacking = true;
+                this.attacking = true;
             }
         }else{
             this.attack_timer = 0;
-            this.isAttacking = false;
+            this.attacking = false;
         }
         if(this.taking_damage_timer < 1){
-            this.isTakingDamage = true;
+            this.takingDamage = true;
             this.taking_damage_timer += deltaSeconds;
         }else{
             this.taking_damage_timer = 1;
-            this.isTakingDamage = false;
+            this.takingDamage = false;
         }
         
     }
 
     protected detections(playerPos : Point,){
         const distanceToPlayer = this.distanceTo(playerPos);
-        this.isMovementAllowed = true;
-        this.isAttackingAllowed = false;
+        this.movementAllowed = true;
+        this.attackingAllowed = false;
         
         if(distanceToPlayer <= this.detectionRadius || this.attention_timer > 0){
-            this.isPlayerDetected = true;
+            this.playerDetected = true;
             if(distanceToPlayer < this.attackRadius){
-                this.isAttackingAllowed = true;
+                this.attackingAllowed = true;
             }
             if(distanceToPlayer < this.enemy_sprite.width/2){
-                this.isMovementAllowed = false;
+                this.movementAllowed = false;
             }
             this.onPatrol = false;
         }else if(distanceToPlayer > (this.detectionRadius)){
-            this.isPlayerDetected = false;
+            this.playerDetected = false;
             this.onPatrol = true;
         }
         
-        if(this.onPatrol && !this.isWaiting){
+        if(this.onPatrol && !this.waiting){
             const disntanceToPatrolPoint = this.distanceTo(this.currentPatrolPoint);
             if(disntanceToPatrolPoint < 1){
-                this.isWaiting = true;
+                this.waiting = true;
                 this.patrol_timer = 0;
                 this.assingNextPatrolPoint();
             }
@@ -324,10 +324,10 @@ export class Enemy extends Container implements IHitbox {
     }
 
     protected movimiento(playerPos : Point, deltaTime : number) : void{
-        if(this.isPlayerDetected){
+        if(this.playerDetected){
             this.speed = this.speed_chase;
             this.rotateTowards(playerPos);
-            if(this.isMovementAllowed){
+            if(this.movementAllowed){
                 this.moveTowards(playerPos, deltaTime);
             }
         }else if(this.onPatrol && this.patrol_timer > this.waiting_time){

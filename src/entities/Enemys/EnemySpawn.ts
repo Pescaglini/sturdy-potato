@@ -22,7 +22,7 @@ export class EnemySpawn extends Container {
 
     public update(deltaSeconds: number, _deltaFrame : number, enemyArray : Array<Enemy>, colisionArray : Array<IHitbox>, world : Container) {
         this.timerSpawn += deltaSeconds;
-        if(this.timerSpawn >= 7){
+        if(this.timerSpawn >= 0.01){//ojo estaba en 7
             this.spawnAdder(enemyArray,colisionArray,world);
             this.timerSpawn = 0;
         }
