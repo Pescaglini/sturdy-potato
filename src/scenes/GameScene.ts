@@ -1,4 +1,4 @@
-import { Container, IDestroyOptions, Sprite, Texture } from "pixi.js";
+import { Container, IDestroyOptions, Point, Rectangle, Sprite, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
@@ -32,7 +32,7 @@ export class GameScene extends Container implements IUpdateable{
     private character_projectiles :  Array<Projectile>;
     private enemy_hitbox_array :  Array<IHitbox>;
     private enemys_array :  Array<Enemy>;
-    private farmeableObject_array :  Array<Tree>;
+    private trees_array :  Array<Tree>;
 
    
     private enemySpawn : EnemySpawn;
@@ -44,11 +44,13 @@ export class GameScene extends Container implements IUpdateable{
 
     constructor(){
         super();
-
+        
         this.world = new Container();
         this.worldLayers = [];
-        for (let index = 0; index < 5; index++) {
+        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer
+        for (let index = 0; index < 3; index++) {
             this.worldLayers.push(new Container());
+            this.world.addChild(this.worldLayers[index]);
         }
 
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
@@ -59,7 +61,7 @@ export class GameScene extends Container implements IUpdateable{
 
         this.enemys_array = new Array<Enemy>();
 
-        this.farmeableObject_array = new Array<Tree>();
+        this.trees_array = new Array<Tree>();
 
         this.player = new Player();
 
@@ -71,14 +73,13 @@ export class GameScene extends Container implements IUpdateable{
 
         this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600);
         this.enemySpawn.position.set(300,1500);
-        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),50);
+        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),4);
         
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
-        const tree = new Tree(Texture.from("treeLeaves"),0.75);
-        this.farmeableObject_array.push(tree);
-
+        this.createEscenary();
+        
         this.pauseState = false;
         
         this.pauseButton = new Button(Texture.from("configuration_ui"),
@@ -100,30 +101,38 @@ export class GameScene extends Container implements IUpdateable{
 
         //Adders
         this.addChild(this.world);
-        this.addChild(this.background);
-        this.addChild(this.enemySpawn);
-        this.addChild(this.player);
-        this.addChild(tree);
+        
+        this.worldLayers[0].addChild(this.background);
+        this.worldLayers[1].addChild(this.enemySpawn);
+        this.worldLayers[1].addChild(this.player);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
         
-        this.world.addChild(this.background)
-        this.world.addChild(this.enemySpawn);
-        this.world.addChild(this.player);
-        this.world.addChild(tree);
-
-        this.world.scale.set(0.5);
-        this.player.position.set(2000,300);
+        
+       
     }
     
+    private createEscenary() : void{
+        const treeNumber = 5; //esto deberia sacarlo de un jason correspondiente al mapa o cuando se cree el spawn de Farmeables
+        const zone : Rectangle = new Rectangle(50,50,2000,400);
+        for (let index = 0; index < treeNumber; index++) {
+            const randPoint : Point = new Point(Math.random()*zone.width,Math.random()*zone.height);
+            console.log(randPoint);
+            const tree = new Tree(Texture.from("treeLeaves"),0.75)
+            tree.position.set(randPoint.x,randPoint.y);
+            this.trees_array.push(tree);
+            this.worldLayers[2].addChild(tree);
+        }
+        
+    }
+
     public override destroy(options?: boolean | IDestroyOptions): void {
         super.destroy(options);
     }
 
     public update(deltaTime: number, deltaFrame: number): void {
-        console.log((deltaFrame*60).toFixed(0));
         if(this.pauseState){
             this.setMouseSpritePosition();
             return;
@@ -134,9 +143,9 @@ export class GameScene extends Container implements IUpdateable{
         this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.world);
         this.enemyUpdates(dt,deltaFrame);
         this.playerCollisionUpdate();
+        this.escenaryUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
-        this.setWorldChildsIndexes();
         this.hud.update();
     }
 
@@ -148,19 +157,28 @@ export class GameScene extends Container implements IUpdateable{
                 this.player.CollisionDetected(overlap,1);
             }
         }
-        //Colisiones con FarmeableObjects
-        for (let object of this.farmeableObject_array) {
-            const overlap = checkCollision_RR(this.player,object);
-            if(overlap != null){
-                this.player.CollisionDetected(overlap,1);
+        //Colisiones con Trees
+        for (let object of this.trees_array) {
+            if(object.isUnderTree(this.player)){
+                const overlap = checkCollision_RR(this.player,object);
+                if(overlap != null){
+                    this.player.CollisionDetected(overlap,1);
+                }
             }
+            
         }
         //Colisiones con mundo tile-management
         if(!this.worldMap.isInAvaibleSquare(this.player.position)){
+            //this.worldMap.getReturnDirection(this.player.position);
             this.player.returnToLastPosition();
         }
     }
 
+    private escenaryUpdate() : void{
+        for (let tree of this.trees_array) {
+            tree.update();
+        }
+    }
 
     private worldMovement() : void{
         const worldSum = this.player.returnMovement();
@@ -244,17 +262,9 @@ export class GameScene extends Container implements IUpdateable{
                 const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
                 const aux_projectile = new Projectile(texture_ammo,this.player.position,this.world.toLocal(this.mousePos));
                 this.character_projectiles.push(aux_projectile);
-                this.addChildAt(aux_projectile,5);
-                this.world.addChild(aux_projectile);
+                this.worldLayers[0].addChild(aux_projectile);
                 
             }
         }
     }
-
-    private setWorldChildsIndexes(): void{
-        
-
-    }
-
-   
 }

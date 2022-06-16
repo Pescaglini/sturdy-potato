@@ -1,4 +1,6 @@
 import { Circle, Graphics, Sprite, Texture } from "pixi.js";
+import { Interpolation, Tween } from "tweedle.js";
+import { Player } from "../entities/Character/Player";
 import { FarmeableObject } from "./FarmeableObject";
 
 
@@ -37,9 +39,9 @@ export class Tree extends FarmeableObject{
     public override update() : void{
         super.update();
         if(this.underTree){
-            this.leaves.alpha = 0.5;
+            new Tween(this.leaves).to({alpha : 0.5},300).interpolation(Interpolation.Color.RGB).start();
         }else{
-            this.leaves.alpha = 1;
+            new Tween(this.leaves).to({alpha : 1},200).interpolation(Interpolation.Color.RGB).start();
         }
     }
 
@@ -47,8 +49,17 @@ export class Tree extends FarmeableObject{
         this.spriteContainer.rotation = Math.random() * Math.PI * 2;
     }
 
-    public getleavesCircle(): Circle {
-        return this.leavesCircle;
+    public isUnderTree(player : Player) : boolean{
+        const minColisionDistance = player.getHitCircle_Rad() + this.leavesCircle.radius;
+        const objectsDistance_X = Math.abs(player.position.x - this.position.x); 
+        const objectsDistance_Y = Math.abs(player.position.y - this.position.y); 
+        const objectsDistance = Math.sqrt(Math.pow(objectsDistance_X,2) + Math.pow(objectsDistance_Y,2));
+        if(minColisionDistance >= objectsDistance){
+            this.underTree = true;
+        }else{
+            this.underTree = false;
+        }
+        return this.underTree;
     }
 
 }

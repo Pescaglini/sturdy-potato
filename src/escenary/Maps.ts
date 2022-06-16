@@ -7,6 +7,10 @@ export class Maps extends Container{
         this.current_map_array = Loader.shared.resources.map1_js.data.layers[0].data;
         console.log(this.current_map_array);
     }
+
+    public getMapArray(): Array<number>{
+        return this.current_map_array;
+    }
     
     public isInAvaibleSquare (pos : Point) : Boolean{
         const index_x = Math.trunc(pos.x/32);
