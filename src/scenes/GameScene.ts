@@ -13,6 +13,8 @@ import { Goblin } from "../entities/Enemys/Goblin";
 import { HUD } from "../ui/HUD";
 import { Maps } from "../escenary/Maps";
 import { Tree } from "../escenary/Tree";
+import { ObscureFilter } from "../filters/obscureFilter";
+
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
 
@@ -26,6 +28,7 @@ export class GameScene extends Container implements IUpdateable{
     private mousePointer : Sprite;
     private mousePos : any;
     private background : Sprite;
+    public obscureFilter : ObscureFilter;
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
@@ -47,8 +50,8 @@ export class GameScene extends Container implements IUpdateable{
         
         this.world = new Container();
         this.worldLayers = [];
-        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer
-        for (let index = 0; index < 3; index++) {
+        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer, 3 = Filters
+        for (let index = 0; index < 4; index++) {
             this.worldLayers.push(new Container());
             this.world.addChild(this.worldLayers[index]);
         }
@@ -64,6 +67,8 @@ export class GameScene extends Container implements IUpdateable{
         this.trees_array = new Array<Tree>();
 
         this.player = new Player();
+
+        this.obscureFilter = new ObscureFilter(this.world);
 
         this.activeWeapon = this.player.getActiveWeapon();
 
@@ -100,7 +105,9 @@ export class GameScene extends Container implements IUpdateable{
 
 
         //Adders
+        this.addChild(this.obscureFilter);
         this.addChild(this.world);
+        
         
         this.worldLayers[0].addChild(this.background);
         this.worldLayers[1].addChild(this.enemySpawn);
@@ -181,6 +188,16 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     private worldMovement() : void{
+        /*let rot = 0;
+        if(Keyboard.state.get("ShiftLeft")){
+            console.log("Shift");
+            if(Keyboard.state.get("KeyQ")){
+                rot = 0.01;
+            }
+            if(Keyboard.state.get("KeyE")){
+                rot = -0.01;
+            }
+        }*/
         const worldSum = this.player.returnMovement();
         this.world.position.x += worldSum.x;
         this.world.position.y += worldSum.y;

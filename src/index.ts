@@ -8,7 +8,7 @@ export const WIDTH = 1920;
 export const HEIGHT = 1080;
 export let RIGHTCLICK = false;
 
-const app = new Application({
+export const app = new Application({
 	view: document.getElementById("pixi-canvas") as HTMLCanvasElement,
 	resolution: window.devicePixelRatio || 1,
 	autoDensity: true,
