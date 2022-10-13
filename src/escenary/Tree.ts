@@ -29,6 +29,8 @@ export class Tree extends FarmeableObject{
         this.logs = new Sprite(Texture.from("treeLogs"));
         this.logs.anchor.set(0.5);
         this.logs.scale.set(2.5,2);
+        this.logs.position.y = 5;
+        this.logs.position.x = -10;
         this.logs.alpha = 1;
         this.underTree = false;
         this.spriteContainer.addChild(this.logs);

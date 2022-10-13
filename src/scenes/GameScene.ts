@@ -13,7 +13,8 @@ import { Goblin } from "../entities/Enemys/Goblin";
 import { HUD } from "../ui/HUD";
 import { Maps } from "../escenary/Maps";
 import { Tree } from "../escenary/Tree";
-import { ObscureFilter } from "../filters/obscureFilter";
+//import { ObscureFilter } from "../filters/obscureFilter";
+import { Shadows } from "../shadowsAndLigths/Shadows";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -28,7 +29,7 @@ export class GameScene extends Container implements IUpdateable{
     private mousePointer : Sprite;
     private mousePos : any;
     private background : Sprite;
-    public obscureFilter : ObscureFilter;
+    //public obscureFilter : ObscureFilter;
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
@@ -36,13 +37,15 @@ export class GameScene extends Container implements IUpdateable{
     private enemy_hitbox_array :  Array<IHitbox>;
     private enemys_array :  Array<Enemy>;
     private trees_array :  Array<Tree>;
+    private recShadows_array  :  Array<IHitbox> = [];
 
-   
     private enemySpawn : EnemySpawn;
 
     private world : Container;
     private worldLayers : (Container)[]
     private worldMap : Maps;
+
+    private shadows: Shadows;
     
 
     constructor(){
@@ -68,7 +71,7 @@ export class GameScene extends Container implements IUpdateable{
 
         this.player = new Player();
 
-        this.obscureFilter = new ObscureFilter(this.world);
+        //this.obscureFilter = new ObscureFilter(this.world);
 
         this.activeWeapon = this.player.getActiveWeapon();
 
@@ -82,6 +85,10 @@ export class GameScene extends Container implements IUpdateable{
         
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
+
+        //Lights
+        this.shadows = new Shadows(this.recShadows_array);
+        this.player.addChild(this.shadows);
 
         this.createEscenary();
         
@@ -105,13 +112,15 @@ export class GameScene extends Container implements IUpdateable{
 
 
         //Adders
-        this.addChild(this.obscureFilter);
+        // this.addChild(this.obscureFilter);
         this.addChild(this.world);
-        
+    
         
         this.worldLayers[0].addChild(this.background);
         this.worldLayers[1].addChild(this.enemySpawn);
         this.worldLayers[1].addChild(this.player);
+        
+        //this.worldLayers[1].addChild(lights);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
@@ -122,13 +131,13 @@ export class GameScene extends Container implements IUpdateable{
     }
     
     private createEscenary() : void{
-        const treeNumber = 5; //esto deberia sacarlo de un jason correspondiente al mapa o cuando se cree el spawn de Farmeables
-        const zone : Rectangle = new Rectangle(50,50,2000,400);
+        const treeNumber = 1; //esto deberia sacarlo de un jason correspondiente al mapa o cuando se cree el spawn de Farmeables
+        const zone : Rectangle = new Rectangle(50,50,2000,2000);
         for (let index = 0; index < treeNumber; index++) {
             const randPoint : Point = new Point(Math.random()*zone.width,Math.random()*zone.height);
-            console.log(randPoint);
             const tree = new Tree(Texture.from("treeLeaves"),0.75)
             tree.position.set(randPoint.x,randPoint.y);
+            this.recShadows_array.push(tree);
             this.trees_array.push(tree);
             this.worldLayers[2].addChild(tree);
         }
@@ -154,6 +163,7 @@ export class GameScene extends Container implements IUpdateable{
         this.setMouseSpritePosition();
         this.worldMovement();
         this.hud.update();
+        this.shadows.update();
     }
 
     private playerCollisionUpdate() : void{

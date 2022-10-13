@@ -43,7 +43,6 @@ export class FarmeableObject extends Container implements IHitbox{
     public update() : void{
         
     }
-
     public getHitbox(): Rectangle {
         return this.hitBox.getBounds()
     }
