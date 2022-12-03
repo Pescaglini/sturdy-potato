@@ -1,4 +1,4 @@
-import { Container, IDestroyOptions, Point, Rectangle, Sprite, Texture } from "pixi.js";
+import { BLEND_MODES, Container, Graphics, IDestroyOptions, Point, Rectangle, Sprite, Texture } from "pixi.js";
 import { Gui_pause } from "../ui/Gui_pause";
 import { Player } from "../entities/Character/Player";
 import { IUpdateable } from "../utils/IUpdateable";
@@ -13,8 +13,9 @@ import { Goblin } from "../entities/Enemys/Goblin";
 import { HUD } from "../ui/HUD";
 import { Maps } from "../escenary/Maps";
 import { Tree } from "../escenary/Tree";
-//import { ObscureFilter } from "../filters/obscureFilter";
 import { Shadows } from "../shadowsAndLigths/Shadows";
+import { HEIGHT, WIDTH } from "..";
+import { ObscureFilter } from "../filters/ObscureFilter";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -29,7 +30,7 @@ export class GameScene extends Container implements IUpdateable{
     private mousePointer : Sprite;
     private mousePos : any;
     private background : Sprite;
-    //public obscureFilter : ObscureFilter;
+    public obscureFilter : ObscureFilter;
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
@@ -53,12 +54,12 @@ export class GameScene extends Container implements IUpdateable{
         
         this.world = new Container();
         this.worldLayers = [];
-        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer, 3 = Filters
-        for (let index = 0; index < 4; index++) {
+        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer, 3 = Filters, 4 = mask
+        for (let index = 0; index < 5; index++) {
             this.worldLayers.push(new Container());
             this.world.addChild(this.worldLayers[index]);
         }
-
+        
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
         this.character_projectiles = new Array<Projectile>();
@@ -71,7 +72,7 @@ export class GameScene extends Container implements IUpdateable{
 
         this.player = new Player();
 
-        //this.obscureFilter = new ObscureFilter(this.world);
+        this.obscureFilter = new ObscureFilter(this.world);
 
         this.activeWeapon = this.player.getActiveWeapon();
 
@@ -89,6 +90,18 @@ export class GameScene extends Container implements IUpdateable{
         //Lights
         this.shadows = new Shadows(this.recShadows_array);
         this.player.addChild(this.shadows);
+
+        const maskRectangle = new Graphics()
+        maskRectangle.beginFill(0x222222,1);
+        maskRectangle.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        maskRectangle.blendMode = BLEND_MODES.ADD;
+        maskRectangle.mask = this.shadows.polygons;
+        this.player.addChild(maskRectangle);
+        const maskRectangle2 = new Graphics()
+        maskRectangle2.beginFill(0x000000,0.6);
+        maskRectangle2.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        this.player.addChild(maskRectangle2);
+
 
         this.createEscenary();
         
@@ -112,7 +125,7 @@ export class GameScene extends Container implements IUpdateable{
 
 
         //Adders
-        // this.addChild(this.obscureFilter);
+        this.addChild(this.obscureFilter);
         this.addChild(this.world);
     
         
@@ -120,7 +133,7 @@ export class GameScene extends Container implements IUpdateable{
         this.worldLayers[1].addChild(this.enemySpawn);
         this.worldLayers[1].addChild(this.player);
         
-        //this.worldLayers[1].addChild(lights);
+        // this.worldLayers[1].addChild(lights);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
@@ -131,7 +144,7 @@ export class GameScene extends Container implements IUpdateable{
     }
     
     private createEscenary() : void{
-        const treeNumber = 1; //esto deberia sacarlo de un jason correspondiente al mapa o cuando se cree el spawn de Farmeables
+        const treeNumber = 5; //esto deberia sacarlo de un jason correspondiente al mapa o cuando se cree el spawn de Farmeables
         const zone : Rectangle = new Rectangle(50,50,2000,2000);
         for (let index = 0; index < treeNumber; index++) {
             const randPoint : Point = new Point(Math.random()*zone.width,Math.random()*zone.height);
