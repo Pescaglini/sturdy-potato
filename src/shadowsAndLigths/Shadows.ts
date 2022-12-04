@@ -11,11 +11,9 @@ export class Shadows extends Container{
     private trianglePoints: Array<IPointData>;
     private minT1: number;
     private debug: boolean;
-    private shadowCastRadius: number;
 
-    constructor(recArray : Array<IHitbox>, shadowCastRadius: number = 450){
+    constructor(recArray : Array<IHitbox>){
         super();
-        this.shadowCastRadius = shadowCastRadius;
         this.line = new Graphics();
         this.recGraphs = new Graphics();
         this.grafWindow = new Graphics();

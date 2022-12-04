@@ -10,10 +10,12 @@ export class EnemySpawn extends Container {
     private howManyEnemiesMap : Map<Enemy, [number,number]>;    //Enemy,currentAmountEnemieType,maxEnemieType
     private timerSpawn : number;
     private patrolRadius : number;
+    private layer : Container;
 
-    constructor(texture_name : Texture, patrolRadius : number){
+    constructor(texture_name : Texture, patrolRadius : number, layer: Container){
         super();
         this.spriteSpawn = Sprite.from(texture_name);
+        this.layer = layer;
         this.timerSpawn = 0;
         this.howManyEnemiesMap = new Map<Enemy, [number,number]>();
         this.patrolRadius = patrolRadius;
@@ -38,7 +40,7 @@ export class EnemySpawn extends Container {
                         enemy.createPatrolRoute(this.patrolRadius,8);
                         enemyArray.push(enemy);
                         colisionArray.push(enemy);
-                        this.parent.addChild(enemy);
+                        this.layer.addChild(enemy);
                         //world.addChild(enemy);
                         this.howManyEnemiesMap.set(entry[0],[entry[1][0] + 1,entry[1][1]]);
                         break;

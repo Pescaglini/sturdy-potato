@@ -17,6 +17,7 @@ import { Shadows } from "../shadowsAndLigths/Shadows";
 import { HEIGHT, WIDTH } from "..";
 import { ObscureFilter } from "../filters/ObscureFilter";
 import { TorchFilter } from "../filters/TorchFilter";
+import { worldLayersEnum } from "../dictionary/Dictionary";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -57,7 +58,7 @@ export class GameScene extends Container implements IUpdateable{
         this.world = new Container();
         this.worldLayers = [];
         // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer, 3 = Filters, 4 = mask
-        for (let index = 0; index < 5; index++) {
+        for (let index = 0; index < 6; index++) {
             this.worldLayers.push(new Container());
             this.world.addChild(this.worldLayers[index]);
         }
@@ -80,14 +81,14 @@ export class GameScene extends Container implements IUpdateable{
 
         this.worldMap = new Maps();
 
-        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600);
+        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600,this.worldLayers[worldLayersEnum.Enemies]);
         this.enemySpawn.position.set(300,1500);
         this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),4);
         
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
-        //Lights
+        //Lights and Shadows
         this.obscureFilter = new ObscureFilter(this.world);
         this.torchLight = new TorchFilter();
         this.shadows = new Shadows(this.recShadows_array);
@@ -107,6 +108,8 @@ export class GameScene extends Container implements IUpdateable{
 
         //this.torchLight.orangeContainer.mask = this.shadows.polygons;
         this.torchLight.yellowContainer.mask = this.shadows.polygons;
+
+        this.worldLayers[worldLayersEnum.Enemies].mask = this.shadows.polygons;
 
         
 
@@ -137,12 +140,12 @@ export class GameScene extends Container implements IUpdateable{
         this.addChild(this.world);
         
         
-        this.worldLayers[0].addChild(this.background);
-        this.worldLayers[1].addChild(this.enemySpawn);
-        this.worldLayers[1].addChild(this.player);
+        this.worldLayers[worldLayersEnum.UnderPlayer].addChild(this.background);
+        this.worldLayers[worldLayersEnum.UnderPlayer].addChild(this.enemySpawn);
+        this.worldLayers[worldLayersEnum.AsPlayer].addChild(this.player);
         
         this.player.addChild(this.torchLight);
-        // this.worldLayers[1].addChild(lights);
+        // this.worldLayers[worldLayersEnum.AsPlayer].addChild(lights);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
@@ -161,7 +164,7 @@ export class GameScene extends Container implements IUpdateable{
             tree.position.set(randPoint.x,randPoint.y);
             this.recShadows_array.push(tree);
             this.trees_array.push(tree);
-            this.worldLayers[2].addChild(tree);
+            this.worldLayers[worldLayersEnum.AbovePlayer].addChild(tree);
         }
         
     }
@@ -178,7 +181,7 @@ export class GameScene extends Container implements IUpdateable{
         const dt = deltaTime / 1000;
         this.player.update(deltaFrame, dt, this.mousePos);
         this.projectileUpdates(dt,deltaFrame);
-        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.world);
+        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.worldLayers[worldLayersEnum.Enemies]);
         this.enemyUpdates(dt,deltaFrame);
         this.playerCollisionUpdate();
         this.escenaryUpdate();
@@ -311,7 +314,7 @@ export class GameScene extends Container implements IUpdateable{
                 const texture_ammo : Texture = this.activeWeapon.getAmmoTexture();
                 const aux_projectile = new Projectile(texture_ammo,this.player.position,this.world.toLocal(this.mousePos));
                 this.character_projectiles.push(aux_projectile);
-                this.worldLayers[0].addChild(aux_projectile);
+                this.worldLayers[worldLayersEnum.UnderPlayer].addChild(aux_projectile);
                 
             }
         }
