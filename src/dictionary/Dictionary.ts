@@ -10,3 +10,8 @@ export enum worldLayersEnum {
     Filters = 4,
     Mask = 5,
 }
+
+export enum eventTypesEnum {
+    EnemyCreation = "EnemyCreation",
+    EnemyDeleted = "EnemyDeleted",
+}

@@ -17,7 +17,7 @@ import { Shadows } from "../shadowsAndLigths/Shadows";
 import { HEIGHT, WIDTH } from "..";
 import { ObscureFilter } from "../filters/ObscureFilter";
 import { TorchFilter } from "../filters/TorchFilter";
-import { worldLayersEnum } from "../dictionary/Dictionary";
+import { eventTypesEnum, worldLayersEnum } from "../dictionary/Dictionary";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -84,6 +84,9 @@ export class GameScene extends Container implements IUpdateable{
         this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600,this.worldLayers[worldLayersEnum.Enemies]);
         this.enemySpawn.position.set(300,1500);
         this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),4);
+        this.enemySpawn.addListener(eventTypesEnum.EnemyCreation,() => {
+            console.log("se creo un enemigo");
+        });
         
 
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));

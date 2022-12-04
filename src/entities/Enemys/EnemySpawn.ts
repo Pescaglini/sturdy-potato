@@ -1,4 +1,5 @@
 import { Container, Sprite, Texture } from "pixi.js";
+import { eventTypesEnum } from "../../dictionary/Dictionary";
 import { IHitbox } from "../../utils/IHitbox";
 import { Enemy } from "./Enemy";
 import { Goblin } from "./Goblin";
@@ -24,7 +25,7 @@ export class EnemySpawn extends Container {
 
     public update(deltaSeconds: number, _deltaFrame : number, enemyArray : Array<Enemy>, colisionArray : Array<IHitbox>, world : Container) {
         this.timerSpawn += deltaSeconds;
-        if(this.timerSpawn >= 1){//ojo estaba en 7
+        if(this.timerSpawn >= 5){//ojo estaba en 7
             this.spawnAdder(enemyArray,colisionArray,world);
             this.timerSpawn = 0;
         }
@@ -37,6 +38,7 @@ export class EnemySpawn extends Container {
                 switch (entry[0].getEnemyType()) {
                     case "GOBLIN":
                         const enemy = new Goblin(this.position,this);
+                        this.emit(eventTypesEnum.EnemyCreation,[enemy]);
                         enemy.createPatrolRoute(this.patrolRadius,8);
                         enemyArray.push(enemy);
                         colisionArray.push(enemy);
