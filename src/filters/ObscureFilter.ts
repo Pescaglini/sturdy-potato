@@ -15,7 +15,7 @@ export class ObscureFilter extends Container{
         darkGraphics.drawRect(0,0,WIDTH,HEIGHT);
         darkGraphics.endFill();
         this.addChild(darkGraphics);
-        let radius = 600;
+        let radius = 550;
         let blurSize = 250;
         const circle = new Graphics();
         circle.beginFill(0xFF0000);

@@ -16,6 +16,7 @@ import { Tree } from "../escenary/Tree";
 import { Shadows } from "../shadowsAndLigths/Shadows";
 import { HEIGHT, WIDTH } from "..";
 import { ObscureFilter } from "../filters/ObscureFilter";
+import { TorchFilter } from "../filters/TorchFilter";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -31,6 +32,7 @@ export class GameScene extends Container implements IUpdateable{
     private mousePos : any;
     private background : Sprite;
     public obscureFilter : ObscureFilter;
+    private torchLight : TorchFilter;
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
@@ -72,8 +74,6 @@ export class GameScene extends Container implements IUpdateable{
 
         this.player = new Player();
 
-        this.obscureFilter = new ObscureFilter(this.world);
-
         this.activeWeapon = this.player.getActiveWeapon();
 
         this.hud = new HUD(this.player,this.activeWeapon);
@@ -88,7 +88,10 @@ export class GameScene extends Container implements IUpdateable{
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
         //Lights
+        this.obscureFilter = new ObscureFilter(this.world);
+        this.torchLight = new TorchFilter();
         this.shadows = new Shadows(this.recShadows_array);
+
         this.player.addChild(this.shadows);
 
         const maskRectangle = new Graphics()
@@ -101,6 +104,11 @@ export class GameScene extends Container implements IUpdateable{
         maskRectangle2.beginFill(0x000000,0.6);
         maskRectangle2.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
         this.player.addChild(maskRectangle2);
+
+        //this.torchLight.orangeContainer.mask = this.shadows.polygons;
+        this.torchLight.yellowContainer.mask = this.shadows.polygons;
+
+        
 
 
         this.createEscenary();
@@ -127,12 +135,13 @@ export class GameScene extends Container implements IUpdateable{
         //Adders
         this.addChild(this.obscureFilter);
         this.addChild(this.world);
-    
+        
         
         this.worldLayers[0].addChild(this.background);
         this.worldLayers[1].addChild(this.enemySpawn);
         this.worldLayers[1].addChild(this.player);
         
+        this.player.addChild(this.torchLight);
         // this.worldLayers[1].addChild(lights);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);

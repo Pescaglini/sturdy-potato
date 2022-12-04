@@ -11,9 +11,11 @@ export class Shadows extends Container{
     private trianglePoints: Array<IPointData>;
     private minT1: number;
     private debug: boolean;
+    private shadowCastRadius: number;
 
-    constructor(recArray : Array<IHitbox>){
+    constructor(recArray : Array<IHitbox>, shadowCastRadius: number = 450){
         super();
+        this.shadowCastRadius = shadowCastRadius;
         this.line = new Graphics();
         this.recGraphs = new Graphics();
         this.grafWindow = new Graphics();
@@ -117,7 +119,9 @@ export class Shadows extends Container{
             const globalRec = this.rectangles[index].getHitbox();
             const rec = this.toLocal(globalRec);
 
-            this.checkRectangle(rec.x,rec.y,globalRec.width,globalRec.height);
+            if(rec.x < WIDTH/2  && rec.x > -WIDTH/2  && rec.y < HEIGHT/2  && rec.y > -HEIGHT/2  ){
+                this.checkRectangle(rec.x,rec.y,globalRec.width,globalRec.height);
+            }
 
             //Checkear si el quad esta dentro de minimamente en pantalla [Implementar]
 

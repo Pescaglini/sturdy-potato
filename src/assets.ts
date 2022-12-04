@@ -17,6 +17,10 @@ export const assets = [
     {url: "./decoration/treeLeaves.png", name: "treeLeaves"},
     {url: "./decoration/treeLogs.png", name: "treeLogs"},
 
+    //Shadows and Light
+    {url: "./lightsAndShadows/light.png", name: "torchLight"},
+    
+
     //Maps
     {url: "./maps/map1.png", name: "myBackground_1"},
     {url: "./maps/map1_JS.json", name: "map1_js"},
@@ -49,5 +53,6 @@ export const assets = [
     {url: "./ui/ui_elements/exit_ui.png", name: "exit_ui"},
     {url: "./ui/ui_elements/aim48.png", name: "cursor_aim"},
     {url: "./ui/ui_elements/torch_animated.json", name: "torch_animated_js"}
+
 
 ];
