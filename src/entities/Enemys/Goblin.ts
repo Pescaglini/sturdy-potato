@@ -7,12 +7,22 @@ export class Goblin extends Enemy{
         super(startPosition,spawn);
         this.ENEMY_TYPE = "GOBLIN";
         this.enemy_sprite = Sprite.from("goblin");
+        this.enemy_shadow_sprite = Sprite.from("goblin");
+
+
         this.enemy_sprite.anchor.set(0.5);
         this.enemy_sprite.scale.set(2);
         this.enemy_dead_sprite = Sprite.from("goblinDead");
         this.enemy_dead_sprite.anchor.set(0.5);
         this.enemy_dead_sprite.scale.set(2.5);
         this.enemy_damage_text.position.set(-10, -50);
+
+        this.enemy_shadow_sprite.tint = 0x000000;
+        this.enemy_shadow_sprite.anchor.set(0.5,0);
+        this.enemy_shadow_sprite.pivot.set(0,this.enemy_sprite.height/5.5);
+        this.enemy_shadow_sprite.scale.set(2,3.5);
+        //this.enemy_shadow_sprite.position.y -=  this.enemy_shadow_sprite.height / 3;
+
         this.max_health = 100;
         this.current_health = this.max_health;
         this.detectionRadius = 200;
@@ -24,8 +34,7 @@ export class Goblin extends Enemy{
         this.speed_chase = 400;
         this.speed = this.speed_patrol;
 
-        this.addChild(this.enemy_sprite);
-        this.addChild(this.enemy_damage_text);
+        this.addChild(this.enemy_shadow_sprite, this.enemy_sprite, this.enemy_damage_text);
     }
 
     public override changeDeadAnimation() : void{

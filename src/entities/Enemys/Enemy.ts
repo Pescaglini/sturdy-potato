@@ -6,6 +6,7 @@ import { EnemySpawn } from "./EnemySpawn";
 
 export class Enemy extends Container implements IHitbox {
     protected enemy_sprite : Sprite;
+    protected enemy_shadow_sprite : Sprite;
     protected enemy_dead_sprite : Sprite;
     protected enemy_damage_text : Text;
 
@@ -78,6 +79,7 @@ export class Enemy extends Container implements IHitbox {
         this.damage = 0;
 
         this.enemy_sprite = Sprite.from(Texture.from("default_enemy_texture"));
+        this.enemy_shadow_sprite = Sprite.from(Texture.from("default_enemy_texture"));
         this.enemy_dead_sprite = Sprite.from(Texture.from("default_enemy_texture"));
         this.enemy_damage_text = new Text("0", {fontSize: 15,fill: "white", stroke: 0x000000, strokeThickness: 5});
         
@@ -364,6 +366,7 @@ export class Enemy extends Container implements IHitbox {
     protected rotateTowards(objectPoint: Point) : void {
         const rot = this.calculateRotationTo(objectPoint);
         this.enemy_sprite.rotation = rot;
+        this.enemy_shadow_sprite.rotation = rot;
     }
 
     protected calculateRotationTo(objectPoint : Point) : number{
