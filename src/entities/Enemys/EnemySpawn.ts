@@ -38,7 +38,7 @@ export class EnemySpawn extends Container {
                 switch (entry[0].getEnemyType()) {
                     case "GOBLIN":
                         const enemy = new Goblin(this.position,this);
-                        this.emit(eventTypesEnum.EnemyCreation,[enemy]);
+                        this.emit(eventTypesEnum.EnemyCreation,enemy);
                         enemy.createPatrolRoute(this.patrolRadius,8);
                         enemyArray.push(enemy);
                         colisionArray.push(enemy);

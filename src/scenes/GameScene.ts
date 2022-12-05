@@ -55,14 +55,15 @@ export class GameScene extends Container implements IUpdateable{
     constructor(){
         super();
         
+        // World and Layers
         this.world = new Container();
         this.worldLayers = [];
-        // 0 = UnderPlayer, 1 = AsPlayer, 2 = AbovePlayer, 3 = Filters, 4 = mask
         for (let index = 0; index < 6; index++) {
             this.worldLayers.push(new Container());
             this.world.addChild(this.worldLayers[index]);
         }
         
+        // Init
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
         this.character_projectiles = new Array<Projectile>();
@@ -80,43 +81,24 @@ export class GameScene extends Container implements IUpdateable{
         this.hud = new HUD(this.player,this.activeWeapon);
 
         this.worldMap = new Maps();
-
-        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600,this.worldLayers[worldLayersEnum.Enemies]);
-        this.enemySpawn.position.set(300,1500);
-        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),4);
-        this.enemySpawn.addListener(eventTypesEnum.EnemyCreation,() => {
-            console.log("se creo un enemigo");
-        });
         
-
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
         //Lights and Shadows
         this.obscureFilter = new ObscureFilter(this.world);
         this.torchLight = new TorchFilter();
         this.shadows = new Shadows(this.recShadows_array);
+        this.shadowsAndLightsConfig();
 
-        this.player.addChild(this.shadows);
+        //Spawn
+        this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600,this.worldLayers[worldLayersEnum.Enemies]);
+        this.enemySpawn.position.set(300,1500);
+        this.enemySpawn.addEnemyToSpawn(new Goblin(this.enemySpawn.position,this.enemySpawn),4);
+        this.enemySpawn.addListener(eventTypesEnum.EnemyCreation,(enemy: Goblin) => {
+            this.recShadows_array.push(enemy);
+        });
 
-        const maskRectangle = new Graphics()
-        maskRectangle.beginFill(0x222222,1);
-        maskRectangle.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
-        maskRectangle.blendMode = BLEND_MODES.ADD;
-        maskRectangle.mask = this.shadows.polygons;
-        this.player.addChild(maskRectangle);
-        const maskRectangle2 = new Graphics()
-        maskRectangle2.beginFill(0x000000,0.6);
-        maskRectangle2.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
-        this.player.addChild(maskRectangle2);
-
-        //this.torchLight.orangeContainer.mask = this.shadows.polygons;
-        this.torchLight.yellowContainer.mask = this.shadows.polygons;
-
-        this.worldLayers[worldLayersEnum.Enemies].mask = this.shadows.polygons;
-
-        
-
-
+        //Escenary
         this.createEscenary();
         
         this.pauseState = false;
@@ -148,7 +130,6 @@ export class GameScene extends Container implements IUpdateable{
         this.worldLayers[worldLayersEnum.AsPlayer].addChild(this.player);
         
         this.player.addChild(this.torchLight);
-        // this.worldLayers[worldLayersEnum.AsPlayer].addChild(lights);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
         this.addChild(this.pauseButton);
@@ -156,6 +137,26 @@ export class GameScene extends Container implements IUpdateable{
         
         
        
+    }
+
+    private shadowsAndLightsConfig(): void{
+        this.player.addChild(this.shadows);
+
+        const maskRectangle = new Graphics()
+        maskRectangle.beginFill(0x222222,1);
+        maskRectangle.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        maskRectangle.blendMode = BLEND_MODES.ADD;
+        maskRectangle.mask = this.shadows.polygonsContainer;
+        this.player.addChild(maskRectangle);
+        const maskRectangle2 = new Graphics()
+        maskRectangle2.beginFill(0x000000,0.6);
+        maskRectangle2.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        this.player.addChild(maskRectangle2);
+
+        this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
+        //this.torchLight.yellowContainer.mask = this.shadows.polygons;
+        //this.worldLayers[worldLayersEnum.Enemies].mask = this.shadows.polygons;
+
     }
     
     private createEscenary() : void{
@@ -184,7 +185,7 @@ export class GameScene extends Container implements IUpdateable{
         const dt = deltaTime / 1000;
         this.player.update(deltaFrame, dt, this.mousePos);
         this.projectileUpdates(dt,deltaFrame);
-        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.worldLayers[worldLayersEnum.Enemies]);
+        this.enemySpawn.update(dt,deltaFrame,this.enemys_array,this.enemy_hitbox_array,this.worldLayers[worldLayersEnum.AsPlayer]);
         this.enemyUpdates(dt,deltaFrame);
         this.playerCollisionUpdate();
         this.escenaryUpdate();

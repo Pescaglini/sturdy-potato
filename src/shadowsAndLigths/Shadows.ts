@@ -11,6 +11,8 @@ export class Shadows extends Container{
     private trianglePoints: Array<IPointData>;
     private minT1: number;
     private debug: boolean;
+    public polygonsContainer: Container;
+    public offset: number;
 
     constructor(recArray : Array<IHitbox>){
         super();
@@ -18,18 +20,23 @@ export class Shadows extends Container{
         this.recGraphs = new Graphics();
         this.grafWindow = new Graphics();
         this.polygons = new Graphics();
+        this.polygonsContainer =  new Container();
+
+        this.offset = 0;
+        
         this.rectangles = recArray;
         this.trianglePoints = new Array<IPointData>();
-        this.debug = false;
+        this.debug = true;
 
         this.grafWindow.lineStyle(6, 0x0000ff,0);
         this.grafWindow.drawRect(0,0,WIDTH,HEIGHT);
         this.grafWindow.position.set(-WIDTH/2,-HEIGHT/2)
         this.grafWindow.endFill();
 
-        this.addChild(this.polygons);
+        this.addChild(this.polygonsContainer)
+        this.polygonsContainer.addChild(this.polygons);
         //this.addChild(this.grafWindow);
-        //this.addChild(this.recGraphs);
+        this.polygonsContainer.addChild(this.recGraphs);
         //this.addChild(this.line);
         this.minT1 = Infinity;
     }
@@ -114,7 +121,7 @@ export class Shadows extends Container{
         this.recGraphs.clear();
         this.trianglePoints.splice(0);
         for (let index = 0; index < this.rectangles.length; index++) {
-            const globalRec = this.rectangles[index].getHitbox();
+            const globalRec = this.rectangles[index].getShadowRect();
             const rec = this.toLocal(globalRec);
 
             if(rec.x < WIDTH/2  && rec.x > -WIDTH/2  && rec.y < HEIGHT/2  && rec.y > -HEIGHT/2  ){
@@ -123,12 +130,11 @@ export class Shadows extends Container{
 
             //Checkear si el quad esta dentro de minimamente en pantalla [Implementar]
 
-            if(this.debug){
-                this.recGraphs.beginFill(3, 0x00ffaa);
-                this.recGraphs.drawRect(rec.x,rec.y,globalRec.width,globalRec.height);
-                this.recGraphs.endFill();   
-            }
-
+            
+            this.recGraphs.beginFill(0x000000,1);
+            const radius = Math.sqrt(Math.pow((globalRec.height/2),2)  + Math.pow((globalRec.width/2),2))
+            this.recGraphs.drawCircle(rec.x+ globalRec.width/2,rec.y + globalRec.height/2,radius - this.offset);
+            this.recGraphs.endFill();   
             
         }
         // Checking Window border Box agains every other box

@@ -230,6 +230,12 @@ export class Player extends Container implements IHitbox {
         
     }
 
+    public getShadowRect(offset: number = 0): Rectangle {
+        const rec = this.hitBox.getBounds();
+        const newRec = new Rectangle(rec.x + offset, rec.y + offset, rec.width - offset, rec.height - offset);
+        return newRec
+    }
+
     public getHitbox() : Rectangle{
         return this.hitBox.getBounds()
     }

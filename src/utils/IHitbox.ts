@@ -2,6 +2,7 @@ import { Rectangle } from "pixi.js";
 
 export interface IHitbox {
     getHitbox() : Rectangle;
+    getShadowRect(offset?: number) : Rectangle;
     getHitCircle_Rad() : number;
     getHitCircle_Rec() : Rectangle;
     impactObjectAdder(obj : any) : void;

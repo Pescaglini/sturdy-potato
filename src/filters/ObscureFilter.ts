@@ -1,11 +1,10 @@
-import { Container, filters, Graphics, Polygon, Rectangle, SCALE_MODES, Sprite } from "pixi.js";
+import { Container, filters, Graphics, Rectangle, SCALE_MODES, Sprite } from "pixi.js";
 import { app, HEIGHT, WIDTH } from "..";
 
 
 
 
 export class ObscureFilter extends Container{
-    private conicVision: Graphics;
     private focus: Sprite;
     constructor(container : Container){
         super();
@@ -30,22 +29,6 @@ export class ObscureFilter extends Container{
         this.focus.position.set(WIDTH/2,HEIGHT/2)
         this.addChild(this.focus);
 
-        this.conicVision = new Graphics();
-        this.conicVision.beginFill(0xFF0000);
-        const poly : Polygon = new Polygon([
-            {x:WIDTH/2,y:HEIGHT/2},
-            {x:WIDTH/2 - 150,y:HEIGHT/2 - 500},
-            {x:WIDTH/2 + 150,y:HEIGHT/2 - 500},
-            {x:WIDTH/2,y:HEIGHT/2},
-            {x:0,y:0},
-            {x:0,y:WIDTH},
-            {x:WIDTH,y:WIDTH},
-            {x:WIDTH,y:0},
-            {x:0,y:0},
-        ]);
-        this.conicVision.pivot.set(WIDTH/2,HEIGHT/2);
-        this.conicVision.drawPolygon(poly);
-        this.conicVision.endFill();
         //this.addChild(this.conicVision);
         //this.mask = this.conicVision;
 

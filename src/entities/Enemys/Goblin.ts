@@ -32,6 +32,7 @@ export class Goblin extends Enemy{
         this.removeChild(this.enemy_sprite);
         this.addChild(this.enemy_dead_sprite);
     }
+
     
 
 }
