@@ -17,6 +17,8 @@ export const app = new Application({
 	height: HEIGHT
 });
 
+
+
 Keyboard.initialize();
 
 window.addEventListener("resize", ()=>{

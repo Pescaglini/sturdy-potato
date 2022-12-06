@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Point, Rectangle, Sprite, Text, Texture } from "pixi.js";
 import { Interpolation, Tween } from "tweedle.js";
+import { eventTypesEnum } from "../../dictionary/Dictionary";
 import { IHitbox } from "../../utils/IHitbox";
 import { EnemySpawn } from "./EnemySpawn";
 
@@ -27,6 +28,7 @@ export class Enemy extends Container implements IHitbox {
     private dead : boolean;
     private destroyable : boolean;
     private debuggin : boolean;
+    private puntualShadow : boolean;
 
     protected speed : number;
     protected speed_patrol : number;
@@ -63,6 +65,7 @@ export class Enemy extends Container implements IHitbox {
         this.dead = false;
         this.destroyable = false;
         this.takingDamage = false;
+        this.puntualShadow = true;
        
         this.max_health = 100;
         this.current_health = this.max_health;
@@ -122,6 +125,7 @@ export class Enemy extends Container implements IHitbox {
 
     public update(deltaSeconds: number, _deltaFrame : number, playerPos : Point) {
         if(this.dead){
+            this.emit(eventTypesEnum.EnemyDead,this);
             this.enemy_damage_text.alpha = 0;
             new Tween(this.enemy_dead_sprite).to({alpha : 0},3000).interpolation(Interpolation.Color.RGB).start();
             this.dead_timer += deltaSeconds;
@@ -137,6 +141,7 @@ export class Enemy extends Container implements IHitbox {
         this.detections(globalPlayerPos);
         this.movimiento(globalPlayerPos, deltaSeconds);
         this.takingDamageControl();
+        this.shadowProyection(globalPlayerPos);
     }
     
     public getShadowRect(offset: number = 0): Rectangle {
@@ -387,5 +392,13 @@ export class Enemy extends Container implements IHitbox {
 
     public setSpawn(spawn : EnemySpawn){
         this.spawn = spawn;
+    }
+
+    public shadowProyection(objectPoint : Point): void{
+        if(this.puntualShadow){
+            const rot = this.calculateRotationTo(objectPoint) + Math.PI;
+            this.enemy_shadow_sprite.x =  15  * Math.cos(rot - 3.14/2);
+	        this.enemy_shadow_sprite.y =  15  * Math.sin(rot - 3.14/2);
+        }
     }
 }

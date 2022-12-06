@@ -14,4 +14,7 @@ export enum worldLayersEnum {
 export enum eventTypesEnum {
     EnemyCreation = "EnemyCreation",
     EnemyDeleted = "EnemyDeleted",
+    EnemyDead = "EnemyDead",
+    DayStarts = "DayStarts",
+    NightStarts = "NightStarts",
 }

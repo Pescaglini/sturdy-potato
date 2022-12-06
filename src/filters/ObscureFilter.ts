@@ -5,19 +5,19 @@ import { app, HEIGHT, WIDTH } from "..";
 
 
 export class ObscureFilter extends Container{
-    private focus: Sprite;
+    public focus: Sprite;
     constructor(container : Container){
         super();
+
         const darkGraphics = new Graphics();
-        darkGraphics.beginFill(0x000000);
-        darkGraphics.alpha = 0.8
+        darkGraphics.beginFill(0x000000,0.1);
         darkGraphics.drawRect(0,0,WIDTH,HEIGHT);
         darkGraphics.endFill();
         this.addChild(darkGraphics);
-        let radius = 550;
+        let radius = 650;
         let blurSize = 250;
         const circle = new Graphics();
-        circle.beginFill(0xFF0000);
+        circle.beginFill(0xff0000,1);
         circle.drawCircle(radius + blurSize, radius + blurSize, radius);
         circle.endFill();
 
@@ -34,13 +34,5 @@ export class ObscureFilter extends Container{
 
         container.mask = this.focus;
     }
-
-    public update(): void{
-       
-    }
-
-    
-
-
 
 }

@@ -18,10 +18,8 @@ export class Goblin extends Enemy{
         this.enemy_damage_text.position.set(-10, -50);
 
         this.enemy_shadow_sprite.tint = 0x000000;
-        this.enemy_shadow_sprite.anchor.set(0.5,0);
-        this.enemy_shadow_sprite.pivot.set(0,this.enemy_sprite.height/5.5);
-        this.enemy_shadow_sprite.scale.set(2,3.5);
-        //this.enemy_shadow_sprite.position.y -=  this.enemy_shadow_sprite.height / 3;
+        this.enemy_shadow_sprite.anchor.set(0.5,0.5);
+        this.enemy_shadow_sprite.scale.set(2,2);
 
         this.max_health = 100;
         this.current_health = this.max_health;
@@ -39,6 +37,7 @@ export class Goblin extends Enemy{
 
     public override changeDeadAnimation() : void{
         this.removeChild(this.enemy_sprite);
+        this.removeChild(this.enemy_shadow_sprite);
         this.addChild(this.enemy_dead_sprite);
     }
 

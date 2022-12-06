@@ -34,6 +34,9 @@ export class GameScene extends Container implements IUpdateable{
     private background : Sprite;
     public obscureFilter : ObscureFilter;
     private torchLight : TorchFilter;
+    private darkRectangleShadow : Graphics;
+    private lightRectangleShadow : Graphics;
+
     private hud : HUD;
 
     private interactive_background : InteractiveSpace;
@@ -64,6 +67,9 @@ export class GameScene extends Container implements IUpdateable{
         }
         
         // Init
+        this.darkRectangleShadow = new Graphics()
+        this.lightRectangleShadow = new Graphics()
+
         this.mousePointer = new Sprite(Texture.from("cursor_aim"));
 
         this.character_projectiles = new Array<Projectile>();
@@ -89,6 +95,36 @@ export class GameScene extends Container implements IUpdateable{
         this.torchLight = new TorchFilter();
         this.shadows = new Shadows(this.recShadows_array);
         this.shadowsAndLightsConfig();
+
+        this.hud.dayNightCicle.addListener(eventTypesEnum.DayStarts, () => {
+            console.log("day");
+            this.torchLight.mask = null;
+            this.player.removeChild(this.torchLight);
+            this.torchLight.orangeContainer.mask = null;
+            this.player.removeChild(this.shadows);
+            this.darkRectangleShadow.mask = null;
+            this.player.removeChild(this.darkRectangleShadow);
+            this.player.removeChild(this.lightRectangleShadow);
+            
+            this.world.mask = null;
+            this.removeChild(this.obscureFilter);
+        })
+
+        this.hud.dayNightCicle.addListener(eventTypesEnum.NightStarts, () => {
+            console.log("night");
+            this.player.addChild(this.shadows);
+            this.player.addChild(this.darkRectangleShadow);
+            this.darkRectangleShadow.mask = this.shadows.polygonsContainer;
+            this.player.addChild(this.lightRectangleShadow);
+            
+            this.world.mask = this.obscureFilter.focus;
+            this.addChild(this.obscureFilter);
+            this.addChild(this.world);
+            this.addChild(this.hud);
+           
+            this.player.addChild(this.torchLight);
+            this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
+        })
 
         //Spawn
         this.enemySpawn = new EnemySpawn(Texture.from("spawnHole"),600,this.worldLayers[worldLayersEnum.Enemies]);
@@ -132,7 +168,7 @@ export class GameScene extends Container implements IUpdateable{
         this.player.addChild(this.torchLight);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
-        this.addChild(this.pauseButton);
+        //this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
         
         
@@ -142,16 +178,15 @@ export class GameScene extends Container implements IUpdateable{
     private shadowsAndLightsConfig(): void{
         this.player.addChild(this.shadows);
 
-        const maskRectangle = new Graphics()
-        maskRectangle.beginFill(0x222222,1);
-        maskRectangle.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
-        maskRectangle.blendMode = BLEND_MODES.ADD;
-        maskRectangle.mask = this.shadows.polygonsContainer;
-        this.player.addChild(maskRectangle);
-        const maskRectangle2 = new Graphics()
-        maskRectangle2.beginFill(0x000000,0.6);
-        maskRectangle2.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
-        this.player.addChild(maskRectangle2);
+        this.darkRectangleShadow.beginFill(0x222222,1);
+        this.darkRectangleShadow.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        this.darkRectangleShadow.blendMode = BLEND_MODES.ADD;
+        this.darkRectangleShadow.mask = this.shadows.polygonsContainer;
+        this.player.addChild(this.darkRectangleShadow);
+        
+        this.lightRectangleShadow.beginFill(0x000000,0.6);
+        this.lightRectangleShadow.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
+        this.player.addChild(this.lightRectangleShadow);
 
         this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
         //this.torchLight.yellowContainer.mask = this.shadows.polygons;
@@ -191,7 +226,7 @@ export class GameScene extends Container implements IUpdateable{
         this.escenaryUpdate();
         this.setMouseSpritePosition();
         this.worldMovement();
-        this.hud.update();
+        this.hud.update(dt);
         this.shadows.update();
     }
 
