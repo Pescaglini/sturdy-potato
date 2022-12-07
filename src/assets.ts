@@ -53,6 +53,9 @@ export const assets = [
     {url: "./ui/ui_elements/exit_ui.png", name: "exit_ui"},
     {url: "./ui/ui_elements/aim48.png", name: "cursor_aim"},
     {url: "./ui/ui_elements/sun.png", name: "sun"},
+    {url: "./ui/ui_elements/moon.png", name: "moon"},
+    {url: "./ui/ui_elements/forest.png", name: "forest"},
+    {url: "./ui/ui_elements/sky.png", name: "sky"},
     {url: "./ui/ui_elements/torch_animated.json", name: "torch_animated_js"}
 
 

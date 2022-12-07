@@ -24,8 +24,8 @@ export class HUD extends Container{
         this.textAmmo.position.set(50,60);
 
         this.dayNightCicle = new DayNightUi(100);
-        this.dayNightCicle.position.x = 1700; 
-        this.dayNightCicle.position.y = 120; 
+        this.dayNightCicle.position.x = 1800; 
+        this.dayNightCicle.position.y = 130; 
         
         this.addChild(this.healthBar);
         this.addChild(this.textAmmo);

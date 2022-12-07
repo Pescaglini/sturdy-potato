@@ -122,9 +122,6 @@ export class GameScene extends Container implements IUpdateable{
             new Tween(this.torchLight).to({alpha: 1}, timeTransitionCicle).start();
             
             new Tween(this.obscureFilter.focus).to({scale: {x: 1, y: 1}}, timeTransitionCicle).start();
-            //this.worldLayers[worldLayersEnum.Filters].mask = this.obscureFilter.focus;
-            //new Tween(this.worldLayers[worldLayersEnum.Filters]).to({alpha: 1}, timeTransitionCicle).start();
-
         })
 
         //Spawn
@@ -165,38 +162,31 @@ export class GameScene extends Container implements IUpdateable{
         this.worldLayers[worldLayersEnum.UnderPlayer].addChild(this.enemySpawn);
         this.worldLayers[worldLayersEnum.AsPlayer].addChild(this.player);
         
-        this.player.addChild(this.torchLight);
         this.addChild(this.interactive_background);
         this.addChild(this.hud);
-        //this.addChild(this.pauseButton);
         this.addChild(this.mousePointer);
-        
-        
-       
     }
 
     private shadowsAndLightsConfig(): void{
 
         this.addChild(this.obscureFilter)
         this.world.mask = this.obscureFilter.focus;
-        
+        this.obscureFilter.focus.scale.set(3,3);
 
-        this.player.addChild(this.shadows);
+        this.shadows.alpha = 0;
 
         this.darkRectangleShadow.beginFill(0x222222,1);
         this.darkRectangleShadow.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
         this.darkRectangleShadow.blendMode = BLEND_MODES.ADD;
         this.darkRectangleShadow.mask = this.shadows.polygonsContainer;
-        this.player.addChild(this.darkRectangleShadow);
+        this.darkRectangleShadow.alpha = 0;
         
         this.lightRectangleShadow.beginFill(0x000000,0.6);
         this.lightRectangleShadow.drawRect(-WIDTH/2,-HEIGHT/2,WIDTH,HEIGHT);
-        this.player.addChild(this.lightRectangleShadow);
+        this.lightRectangleShadow.alpha = 0;
 
         this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
-
-        //this.torchLight.yellowContainer.mask = this.shadows.polygons;
-        //this.worldLayers[worldLayersEnum.Enemies].mask = this.shadows.polygons;
+        this.torchLight.alpha = 0;
 
     }
     
