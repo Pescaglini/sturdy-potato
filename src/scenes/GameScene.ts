@@ -18,6 +18,7 @@ import { HEIGHT, WIDTH } from "..";
 import { ObscureFilter } from "../filters/ObscureFilter";
 import { TorchFilter } from "../filters/TorchFilter";
 import { eventTypesEnum, worldLayersEnum } from "../dictionary/Dictionary";
+import { Tween } from "tweedle.js";
 
 
 //TO-DO No tengo como sacar el enemigo del player collision objects, arreglar o repensar
@@ -91,39 +92,39 @@ export class GameScene extends Container implements IUpdateable{
         this.interactive_background = new InteractiveSpace(this.activateWeapon.bind(this));
 
         //Lights and Shadows
-        this.obscureFilter = new ObscureFilter(this.world);
+
+        this.obscureFilter = new ObscureFilter();
         this.torchLight = new TorchFilter();
         this.shadows = new Shadows(this.recShadows_array);
         this.shadowsAndLightsConfig();
 
+
+        const timeTransitionCicle = 3000;
         this.hud.dayNightCicle.addListener(eventTypesEnum.DayStarts, () => {
             console.log("day");
-            this.torchLight.mask = null;
-            this.player.removeChild(this.torchLight);
-            this.torchLight.orangeContainer.mask = null;
-            this.player.removeChild(this.shadows);
-            this.darkRectangleShadow.mask = null;
-            this.player.removeChild(this.darkRectangleShadow);
-            this.player.removeChild(this.lightRectangleShadow);
+            new Tween(this.torchLight).to({alpha: 0}, timeTransitionCicle).start().onComplete(()=>{this.player.removeChild(this.torchLight);});
+            new Tween(this.shadows).to({alpha: 0}, timeTransitionCicle).start().onComplete(()=>{this.player.removeChild(this.shadows);});
+            new Tween(this.darkRectangleShadow).to({alpha: 0}, timeTransitionCicle).start().onComplete(()=>{this.player.removeChild(this.darkRectangleShadow);});
+            new Tween(this.lightRectangleShadow).to({alpha: 0}, timeTransitionCicle).start().onComplete(()=>{this.player.removeChild(this.lightRectangleShadow);});
+            new Tween(this.obscureFilter.focus).to({scale: {x: 3, y: 3}}, timeTransitionCicle).start();
             
-            this.world.mask = null;
-            this.removeChild(this.obscureFilter);
         })
-
+        
         this.hud.dayNightCicle.addListener(eventTypesEnum.NightStarts, () => {
             console.log("night");
             this.player.addChild(this.shadows);
+            new Tween(this.shadows).to({alpha: 1}, timeTransitionCicle).start();
             this.player.addChild(this.darkRectangleShadow);
-            this.darkRectangleShadow.mask = this.shadows.polygonsContainer;
+            new Tween(this.darkRectangleShadow).to({alpha: 1}, timeTransitionCicle).start();
             this.player.addChild(this.lightRectangleShadow);
-            
-            this.world.mask = this.obscureFilter.focus;
-            this.addChild(this.obscureFilter);
-            this.addChild(this.world);
-            this.addChild(this.hud);
-           
+            new Tween(this.lightRectangleShadow).to({alpha: 1}, timeTransitionCicle).start();
             this.player.addChild(this.torchLight);
-            this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
+            new Tween(this.torchLight).to({alpha: 1}, timeTransitionCicle).start();
+            
+            new Tween(this.obscureFilter.focus).to({scale: {x: 1, y: 1}}, timeTransitionCicle).start();
+            //this.worldLayers[worldLayersEnum.Filters].mask = this.obscureFilter.focus;
+            //new Tween(this.worldLayers[worldLayersEnum.Filters]).to({alpha: 1}, timeTransitionCicle).start();
+
         })
 
         //Spawn
@@ -157,8 +158,7 @@ export class GameScene extends Container implements IUpdateable{
 
 
         //Adders
-        this.addChild(this.obscureFilter);
-        this.addChild(this.world);
+       this.addChild(this.world);
         
         
         this.worldLayers[worldLayersEnum.UnderPlayer].addChild(this.background);
@@ -176,6 +176,11 @@ export class GameScene extends Container implements IUpdateable{
     }
 
     private shadowsAndLightsConfig(): void{
+
+        this.addChild(this.obscureFilter)
+        this.world.mask = this.obscureFilter.focus;
+        
+
         this.player.addChild(this.shadows);
 
         this.darkRectangleShadow.beginFill(0x222222,1);
@@ -189,6 +194,7 @@ export class GameScene extends Container implements IUpdateable{
         this.player.addChild(this.lightRectangleShadow);
 
         this.torchLight.orangeContainer.mask = this.shadows.polygonsContainer;
+
         //this.torchLight.yellowContainer.mask = this.shadows.polygons;
         //this.worldLayers[worldLayersEnum.Enemies].mask = this.shadows.polygons;
 
@@ -275,6 +281,8 @@ export class GameScene extends Container implements IUpdateable{
         const worldSum = this.player.returnMovement();
         this.world.position.x += worldSum.x;
         this.world.position.y += worldSum.y;
+        this.worldLayers[worldLayersEnum.Filters].x -= worldSum.x; 
+        this.worldLayers[worldLayersEnum.Filters].y -= worldSum.y;
     }
 
     private enemyUpdates(deltaSeconds: number, deltaFrame: number) : void{

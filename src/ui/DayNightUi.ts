@@ -14,8 +14,8 @@ export class DayNightUi extends Container{
     constructor(rotRadius: number){
         super();
         this.day = false;
-        this.dayTime = 0.1;
-        this.nightTime = 0.1;
+        this.dayTime = 0.15;
+        this.nightTime = 0.15;
         this.currentTime = this.nightTime * 60;
         this.rot = Math.PI;
         this.rotRadius = rotRadius;
@@ -30,7 +30,11 @@ export class DayNightUi extends Container{
         this.sun.anchor.set(0.5,0.5);
         this.addChild(this.sun);
 
-        this.text = new Text(60,{fontSize: 20,fill: "white", stroke: 0x000000, strokeThickness: 3});
+        new Tween(this).to({rot : Math.PI * 2 }, this.currentTime * 1000).start().onComplete(()=>{
+            this.rot = Math.PI;
+        })
+
+        this.text = new Text((60).toString(),{fontSize: 20,fill: "white", stroke: 0x000000, strokeThickness: 3});
         this.text.anchor.set(0.5,0.5)
         this.addChild(this.text);
 
@@ -45,12 +49,11 @@ export class DayNightUi extends Container{
             }else{
                 this.emit(eventTypesEnum.NightStarts);
             }
-            new Tween(this.rot).to({this : {rot:Math.PI * 2} }, this.currentTime * 1000).start().onComplete(()=>{
+            new Tween(this).to({rot : Math.PI * 2 }, this.currentTime * 1000).start().onComplete(()=>{
                 this.rot = Math.PI;
             })
            
         }
-        console.log(this.rot);
         this.text.text = this.currentTime.toFixed(2) + " " + this.day;
         this.sun.x =  this.rotRadius  * Math.cos(this.rot);
 	    this.sun.y =  this.rotRadius  * Math.sin(this.rot);

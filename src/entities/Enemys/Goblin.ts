@@ -20,6 +20,7 @@ export class Goblin extends Enemy{
         this.enemy_shadow_sprite.tint = 0x000000;
         this.enemy_shadow_sprite.anchor.set(0.5,0.5);
         this.enemy_shadow_sprite.scale.set(2,2);
+        this.enemy_shadow_sprite.alpha = 0.5;
 
         this.max_health = 100;
         this.current_health = this.max_health;
