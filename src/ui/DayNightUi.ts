@@ -55,7 +55,7 @@ export class DayNightUi extends Container{
         sunAndMoonContainer.mask = rectangle;
 
         const info= new Graphics();
-        info.beginFill(0xffff00)
+        info.beginFill(0xaaaaaa)
         info.drawRect(-rotRadius * 1.2,0,rotRadius * 2.4,rotRadius * 1);
         info.endFill();
         this.addChild(info);
